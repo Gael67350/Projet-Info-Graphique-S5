@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# IDE workspace folder
+/workspace/
+
+# IntelliJ CLion
+/.idea/
