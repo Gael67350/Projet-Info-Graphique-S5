@@ -8,12 +8,16 @@
 
 //GML libraries
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> 
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.h"
 
 #include "logger.h"
+
+// Geometry
+#include <Geometry.h>
+#include <Cylinder.h>
 
 #define WIDTH     800
 #define HEIGHT    600
@@ -21,21 +25,19 @@
 #define TIME_PER_FRAME_MS  (1.0f/FRAMERATE * 1e3)
 #define INDICE_TO_PTR(x) ((void*)(x))
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     ////////////////////////////////////////
     //SDL2 / OpenGL Context initialization : 
     ////////////////////////////////////////
-    
+
     //Initialize SDL2
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
-    {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
         ERROR("The initialization of the SDL failed : %s\n", SDL_GetError());
         return 0;
     }
 
     //Create a Window
-    SDL_Window* window = SDL_CreateWindow("VR Camera",                           //Titre
+    SDL_Window *window = SDL_CreateWindow("VR Camera",                           //Titre
                                           SDL_WINDOWPOS_UNDEFINED,               //X Position
                                           SDL_WINDOWPOS_UNDEFINED,               //Y Position
                                           WIDTH, HEIGHT,                         //Resolution
@@ -57,31 +59,78 @@ int main(int argc, char *argv[])
     glViewport(0, 0, WIDTH, HEIGHT); //Draw on ALL the screen
 
     //The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
-    glClearColor(0.0, 0.0, 0.0, 1.0); //Full Black
+    glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
 
     glEnable(GL_DEPTH_TEST); //Active the depth test
 
     //TODO
     //From here you can load your OpenGL objects, like VBO, Shaders, etc.
+    // Create cone
+    Cylinder trunk = Cylinder(50);
+
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float) * trunk.getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * trunk.getNbVertices(), trunk.getVertices());
+
+    // Create camera
+    float screenRatio = (float) WIDTH / HEIGHT;
+
+    glm::mat4 projection = {
+            glm::vec4(1 / screenRatio, 0, 0, 0),
+            glm::vec4(0, 1, 0, 0),
+            glm::vec4(0, 0, 1, 0),
+            glm::vec4(0, 0, 0, 1)
+    };
+
+    glm::mat4 trunkView(1.f);
+    trunkView = glm::rotate(trunkView, (float) 90, glm::vec3(1., 0, 0));
+
+
+    glm::mat4 trunkModel = {
+            glm::vec4(1, 0, 0, 0),
+            glm::vec4(0, 1, 0, 0),
+            glm::vec4(0, 0, 4, 0),
+            glm::vec4(0, 0, 0, 3)
+    };
+
+    glm::mat4 trunkMvp = projection * trunkView * trunkModel;
+
+    // Load Shaders
+    FILE *greenFile;
+    FILE *fragFile;
+
+    fopen_s(&greenFile, "Shaders/color.vert", "r");
+    fopen_s(&fragFile, "Shaders/color.frag", "r");
+
+    Shader *shader = Shader::loadFromFiles(greenFile, fragFile);
+
+    fclose(greenFile);
+    fclose(fragFile);
+
+    if (shader == NULL) {
+        return EXIT_FAILURE;
+    }
+
+    glUseProgram(shader->getProgramID());
     //TODO
 
     bool isOpened = true;
 
     //Main application loop
-    while(isOpened)
-    {
+    while (isOpened) {
         //Time in ms telling us when this frame started. Useful for keeping a fix framerate
         uint32_t timeBegin = SDL_GetTicks();
 
         //Fetch the SDL events
         SDL_Event event;
-        while(SDL_PollEvent(&event))
-        {
-            switch(event.type)
-            {
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
                 case SDL_WINDOWEVENT:
-                    switch(event.window.event)
-                    {
+                    switch (event.window.event) {
                         case SDL_WINDOWEVENT_CLOSE:
                             isOpened = false;
                             break;
@@ -89,7 +138,7 @@ int main(int argc, char *argv[])
                             break;
                     }
                     break;
-                //We can add more event, like listening for the keyboard or the mouse. See SDL_Event documentation for more details
+                    //We can add more event, like listening for the keyboard or the mouse. See SDL_Event documentation for more details
             }
         }
 
@@ -101,10 +150,19 @@ int main(int argc, char *argv[])
 
 
         //TODO rendering
-        
-        
-        
-        
+
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+        GLint vPosition = glGetAttribLocation(shader->getProgramID(), "vPosition");
+        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(0));
+        glEnableVertexAttribArray(vPosition);
+
+        GLint uMVP = glGetUniformLocation(shader->getProgramID(), "uMVP");
+        glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(trunkMvp));
+
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, trunk.getNbVertices());
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         //Display on screen (swap the buffer on screen and the buffer you are drawing on)
         SDL_GL_SwapWindow(window);
@@ -113,14 +171,19 @@ int main(int argc, char *argv[])
         uint32_t timeEnd = SDL_GetTicks();
 
         //We want FRAMERATE FPS
-        if(timeEnd - timeBegin < TIME_PER_FRAME_MS)
+        if (timeEnd - timeBegin < TIME_PER_FRAME_MS)
             SDL_Delay(TIME_PER_FRAME_MS - (timeEnd - timeBegin));
     }
-    
+
+    //Free
+    glUseProgram(0);
+    delete shader;
+    glDeleteBuffers(1, &buffer);
+
     //Free everything
-    if(context != NULL)
+    if (context != NULL)
         SDL_GL_DeleteContext(context);
-    if(window != NULL)
+    if (window != NULL)
         SDL_DestroyWindow(window);
 
     return 0;
