@@ -17,13 +17,21 @@
 
 // Geometry
 #include <Geometry.h>
-#include <Cylinder.h>
+#include <FireTree.h>
+
+// Camera
+#include <Camera.h>
+
+// Utils
+#include <stdio.h>
+#include <stack>
 
 #define WIDTH     800
 #define HEIGHT    600
 #define FRAMERATE 60
 #define TIME_PER_FRAME_MS  (1.0f/FRAMERATE * 1e3)
 #define INDICE_TO_PTR(x) ((void*)(x))
+#define DEGREES_TO_RADIANS(x) x*(3.141592f/180.0f)
 
 int main(int argc, char *argv[]) {
     ////////////////////////////////////////
@@ -65,50 +73,36 @@ int main(int argc, char *argv[]) {
 
     //TODO
     //From here you can load your OpenGL objects, like VBO, Shaders, etc.
-    // Create cone
-    Cylinder trunk = Cylinder(50);
 
+	// Create FireTree
+	FireTree fireTree = FireTree(500);
+
+    // Put all fire tree parts in the VBO
     GLuint buffer;
     glGenBuffers(1, &buffer);
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float) * trunk.getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * trunk.getNbVertices(), trunk.getVertices());
+    glBufferData(GL_ARRAY_BUFFER, (3 + 3) * sizeof(float) * fireTree.getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * fireTree.getNbVertices(), fireTree.getVertices());
+	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * fireTree.getNbVertices(), 3 * sizeof(float) * fireTree.getNbVertices(), fireTree.getColors());
 
-    // Create camera
-    float screenRatio = (float) WIDTH / HEIGHT;
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glm::mat4 projection = {
-            glm::vec4(1 / screenRatio, 0, 0, 0),
-            glm::vec4(0, 1, 0, 0),
-            glm::vec4(0, 0, 1, 0),
-            glm::vec4(0, 0, 0, 1)
-    };
-
-    glm::mat4 trunkView(1.f);
-    trunkView = glm::rotate(trunkView, (float) 90, glm::vec3(1., 0, 0));
-
-
-    glm::mat4 trunkModel = {
-            glm::vec4(1, 0, 0, 0),
-            glm::vec4(0, 1, 0, 0),
-            glm::vec4(0, 0, 4, 0),
-            glm::vec4(0, 0, 0, 3)
-    };
-
-    glm::mat4 trunkMvp = projection * trunkView * trunkModel;
+    // View from world space to camera space
+    Camera camera = Camera((float)WIDTH / HEIGHT, 45.f);
+    camera.setPosition(glm::vec3(4.f, 4.f, -10.f));
 
     // Load Shaders
-    FILE *greenFile;
+    FILE *vertFile;
     FILE *fragFile;
 
-    fopen_s(&greenFile, "Shaders/color.vert", "r");
-    fopen_s(&fragFile, "Shaders/color.frag", "r");
+    vertFile = fopen("Shaders/color.vert", "r");
+    fragFile = fopen("Shaders/color.frag", "r");
 
-    Shader *shader = Shader::loadFromFiles(greenFile, fragFile);
+    Shader *shader = Shader::loadFromFiles(vertFile, fragFile);
 
-    fclose(greenFile);
+    fclose(vertFile);
     fclose(fragFile);
 
     if (shader == NULL) {
@@ -150,19 +144,18 @@ int main(int argc, char *argv[]) {
 
 
         //TODO rendering
-
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
         GLint vPosition = glGetAttribLocation(shader->getProgramID(), "vPosition");
         glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(0));
         glEnableVertexAttribArray(vPosition);
 
-        GLint uMVP = glGetUniformLocation(shader->getProgramID(), "uMVP");
-        glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(trunkMvp));
+		GLint vColor = glGetAttribLocation(shader->getProgramID(), "vColor");
+		glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(3 * sizeof(float) * fireTree.getNbVertices()));
+		glEnableVertexAttribArray(vColor);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, trunk.getNbVertices());
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Draw fire tree
+		fireTree.draw(shader, camera);
 
         //Display on screen (swap the buffer on screen and the buffer you are drawing on)
         SDL_GL_SwapWindow(window);
