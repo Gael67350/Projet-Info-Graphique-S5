@@ -71,12 +71,13 @@ int main(int argc, char *argv[])
     Sphere rock = Sphere(50,50);
     Cube flameParticle = Cube();
 
-    GLuint FireBuffer;
-    glGenBuffers(1,&FireBuffer);
+    GLuint fireBuffer;
+    glGenBuffers(1,&fireBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
 
     int nbVerticesTot = rock.getNbVertices() + flameParticle.getNbVertices() + log.getNbVertices();
 
-    glBufferData(GL_ARRAY_BUFFER, (3*2 + 2  )*sizeof(float) * nbVerticesTot , NULL , GL_DYNAMIC_DRAW );
+    glBufferData(GL_ARRAY_BUFFER, (3*2 + 2)*sizeof(float) * nbVerticesTot , NULL , GL_DYNAMIC_DRAW );
 
     int currentlyInserted = 0;
 
@@ -87,7 +88,6 @@ int main(int argc, char *argv[])
     currentlyInserted += 3 * sizeof(float)* log.getNbVertices();
     glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* log.getNbVertices() , log.getUVs());
     currentlyInserted += 2 * sizeof(float)* log.getNbVertices();
-
 
     //insertion of sphere data in the VBO
     glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)*rock.getNbVertices() , rock.getVertices());
@@ -104,6 +104,9 @@ int main(int argc, char *argv[])
     currentlyInserted += 3 * sizeof(float)* flameParticle.getNbVertices();
     glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* flameParticle.getNbVertices() , flameParticle.getUVs());
 
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     //loading the shaders
 
     FILE* fireVertFileC = fopen("./Shaders/FireShaders/colorized.vert","r");
@@ -119,6 +122,9 @@ int main(int argc, char *argv[])
     fclose(fireFragFileC);
     fclose(fireVertFileT);
     fclose(fireFragFileT);
+
+    if(colorShader == NULL || texureShader == NULL)
+        return EXIT_FAILURE;
 
     bool isOpened = true;
 
@@ -151,15 +157,65 @@ int main(int argc, char *argv[])
         //Clear the screen : the depth buffer and the color buffer
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+        //*** TODO add other parts of the program
+
+        //Modification and display of the Camp fire in the scene
+
+        glUseProgram(colorShader->getProgramID());
+        glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
+
+        //logs display
+        //selection of datas in the VBOS
+
+        GLint vPosition = glGetAttribLocation(colorShader->getProgramID(),"vPosition");
+        glVertexAttribPointer(vPosition,3,GL_FLOAT,GL_FALSE,0,INDICE_TO_PTR(0));
+        glEnableVertexAttribArray(vPosition);
+
+        GLint vNormals = glGetAttribLocation(colorShader->getProgramID(),"vNormals");
+        glVertexAttribPointer(vNormals,3,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR(3 * sizeof(float)* log.getNbVertices()));
+        glEnableVertexAttribArray(vNormals);
+
+        GLint vUV = glGetAttribLocation(colorShader->getProgramID(),"vUV");
+        glVertexAttribPointer(vUV,2,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR(6 * sizeof(float)* log.getNbVertices()));
+        glEnableVertexAttribArray(vUV);
+
+        //color affectation :
+
+        glm::vec3 shapeColor(1.0,1.0,1.0);
+
+        GLint uColor = glGetUniformLocation(colorShader->getProgramID(),"uColor");
+        glUniform3fv(uColor,1,glm::value_ptr(shapeColor));
+
+        //definition of the modification matrix associated with logs
+
+        glm::mat4 cylinderTransformationMatrix(1.0f);
+
+        GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
+        glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(cylinderTransformationMatrix));
 
 
+        //definition of the projection matrix
 
+        glm::vec3 cameraPos(-1.f, 1.f, 0);
+        glm::vec3 cameraTarget(0, 0, 0);
+        glm::vec3 cameraUp(0.f, 1.f, 0.f);
 
-        //TODO rendering
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 proj = glm::perspective(glm::radians(45.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 
+        glm::mat4 mvp = proj*view;
 
+        GLint uMVP = glGetUniformLocation(colorShader->getProgramID(), "uMvp");
+        glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
 
+        //figure draw
 
+        glDrawArrays(GL_TRIANGLES, 0, log.getNbVertices());
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glUseProgram(0);
+
+        //end of the fire drawing section
 
         //Display on screen (swap the buffer on screen and the buffer you are drawing on)
         SDL_GL_SwapWindow(window);

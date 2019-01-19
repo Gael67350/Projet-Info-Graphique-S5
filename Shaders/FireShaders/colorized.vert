@@ -1,15 +1,23 @@
 #version 130
 precision mediump float;
 
-attribute vec3 vPosition; //Depending who compiles, these variables are not "attribute" but "in". In this version (130) both are accepted. in should be used later
-attribute vec3 vColor;
+attribute vec3 vPosition; 
+uniform mat4 uTransfo;
+uniform mat4 uMvp;
 
-varying vec4 varyColor; //Depending who compiles, these variables are not "varying" but "out". In this version (130) both are accepted. out should be used later
+//normals
+attribute vec3 vNormals;
 
-//We still use varying because OpenGLES 2.0 (OpenGL Embedded System, for example for smartphones) does not accept "in" and "out"
+//uvValues
+attribute vec2 vUV;
+ 
+
+//Color information for fragment shader
+uniform vec3 uColor;
+varying vec4 varyColor; 
 
 void main()
 {
-	gl_Position = vec4(vPosition, 1.0); //We need to put vPosition as a vec4. Because vPosition is a vec3, we need one more value (w) which is here 1.0. Hence x and y go from -w to w hence -1 to +1. Premultiply this variable if you want to transform the position.
-    varyColor = vec4(vColor, 1.0);
+    gl_Position = uMvp*uTransfo*vec4(vPosition, 1.0); 
+    varyColor = vec4(uColor, 1.0);
 }
