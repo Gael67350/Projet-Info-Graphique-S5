@@ -66,8 +66,59 @@ int main(int argc, char *argv[])
 
     glEnable(GL_DEPTH_TEST); //Active the depth test
 
-    //definition of the VBO which will contains all shapes related with the camp fire model
-    
+    //definition of the different shapes used in the fire and definition of the associated VBO
+    Cylinder log = Cylinder(50);
+    Sphere rock = Sphere(50,50);
+    Cube flameParticle = Cube();
+
+    GLuint FireBuffer;
+    glGenBuffers(1,&FireBuffer);
+
+    int nbVerticesTot = rock.getNbVertices() + flameParticle.getNbVertices() + log.getNbVertices();
+
+    glBufferData(GL_ARRAY_BUFFER, (3*2 + 2  )*sizeof(float) * nbVerticesTot , NULL , GL_DYNAMIC_DRAW );
+
+    int currentlyInserted = 0;
+
+    //insertion of cylinder data in the VBO
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)* log.getNbVertices() , log.getVertices());
+    currentlyInserted += 3 * sizeof(float)* log.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)* log.getNbVertices() , log.getNormals());
+    currentlyInserted += 3 * sizeof(float)* log.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* log.getNbVertices() , log.getUVs());
+    currentlyInserted += 2 * sizeof(float)* log.getNbVertices();
+
+
+    //insertion of sphere data in the VBO
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)*rock.getNbVertices() , rock.getVertices());
+    currentlyInserted += 3 * sizeof(float)* rock.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)* rock.getNbVertices() , rock.getNormals());
+    currentlyInserted += 3 * sizeof(float)* rock.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* rock.getNbVertices() , rock.getUVs());
+    currentlyInserted += 2 * sizeof(float)* rock.getNbVertices();
+
+    //insertion of cube sphere in the VBO
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3*sizeof(float)*flameParticle.getNbVertices(),flameParticle.getVertices());
+    currentlyInserted += 3 * sizeof(float)* flameParticle.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float) * flameParticle.getNbVertices() , flameParticle.getNormals());
+    currentlyInserted += 3 * sizeof(float)* flameParticle.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* flameParticle.getNbVertices() , flameParticle.getUVs());
+
+    //loading the shaders
+
+    FILE* fireVertFileC = fopen("./Shaders/FireShaders/colorized.vert","r");
+    FILE* fireFragFileC = fopen("./Shaders/FireShaders/colorized.frag","r");
+
+    FILE* fireVertFileT = fopen("./Shaders/FireShaders/textured.vert","r");
+    FILE* fireFragFileT = fopen("./Shaders/FireShaders/textured.frag","r");
+
+    Shader* colorShader = Shader::loadFromFiles(fireVertFileC,fireFragFileC);
+    Shader* texureShader = Shader::loadFromFiles(fireVertFileT,fireFragFileT);
+
+    fclose(fireVertFileC);
+    fclose(fireFragFileC);
+    fclose(fireVertFileT);
+    fclose(fireFragFileT);
 
     bool isOpened = true;
 
