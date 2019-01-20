@@ -20,6 +20,9 @@
 #include "Cylinder.h"
 #include "Sphere.h"
 
+//other native c++ library used in the program
+#include<vector>
+
 #define WIDTH     800
 #define HEIGHT    600
 #define FRAMERATE 60
@@ -128,6 +131,86 @@ int main(int argc, char *argv[])
     if(colorShader == NULL || texureShader == NULL)
         return EXIT_FAILURE;
 
+    //definition of the lateral offset
+    std::vector<std::pair<float,float>> lateralOffset = std::vector<std::pair<float,float>>();
+
+    //middle point
+    lateralOffset.push_back(std::make_pair(0.f,0.f));
+
+    //first layer
+    lateralOffset.push_back(std::make_pair(0.f,0.3f));
+    lateralOffset.push_back(std::make_pair(0.3f,0.f));
+    lateralOffset.push_back(std::make_pair(0.3f,0.3f));
+    lateralOffset.push_back(std::make_pair(0.f,-0.3f));
+    lateralOffset.push_back(std::make_pair(-0.3f,0.f));
+    lateralOffset.push_back(std::make_pair(-0.3f,-0.3f));
+    lateralOffset.push_back(std::make_pair(-0.3f,0.3f));
+    lateralOffset.push_back(std::make_pair(0.3f,-0.3f));
+
+    //second layer
+    lateralOffset.push_back(std::make_pair(0.3f,0.6f));
+    lateralOffset.push_back(std::make_pair(0.6f,0.6f));
+    lateralOffset.push_back(std::make_pair(0.6f,0.3f));
+    lateralOffset.push_back(std::make_pair(0.6f,0.f));
+    lateralOffset.push_back(std::make_pair(0.6f,-0.3f));
+    lateralOffset.push_back(std::make_pair(0.6f,-0.6f));
+    lateralOffset.push_back(std::make_pair(0.3f,-0.6f));
+    lateralOffset.push_back(std::make_pair(0.0f,-0.6f));
+    lateralOffset.push_back(std::make_pair(-0.3f,-0.6f));
+    lateralOffset.push_back(std::make_pair(-0.6f,-0.6f));
+    lateralOffset.push_back(std::make_pair(-0.6f,-0.3f));
+    lateralOffset.push_back(std::make_pair(-0.6f,0.f));
+    lateralOffset.push_back(std::make_pair(-0.6f,0.3f));
+    lateralOffset.push_back(std::make_pair(-0.6f,0.6f));
+    lateralOffset.push_back(std::make_pair(-0.3f,0.6f));
+    lateralOffset.push_back(std::make_pair(0.0f,0.6f));
+
+    //definition of the vertical offset of each particles
+    std::vector<float> verticalParticleOffset = std::vector<float>() ;
+
+    //addition of the departure point of each particle
+
+    verticalParticleOffset.push_back(0.7);
+    verticalParticleOffset.push_back(0.76);
+    verticalParticleOffset.push_back(0.82);
+    verticalParticleOffset.push_back(0.88);
+    verticalParticleOffset.push_back(0.94);
+    verticalParticleOffset.push_back(1.06);
+    verticalParticleOffset.push_back(1.12);
+    verticalParticleOffset.push_back(1.18);
+    verticalParticleOffset.push_back(1.24);
+    verticalParticleOffset.push_back(1.3);
+    verticalParticleOffset.push_back(1.36);
+    verticalParticleOffset.push_back(1.42);
+    verticalParticleOffset.push_back(1.48);
+    verticalParticleOffset.push_back(1.54);
+    verticalParticleOffset.push_back(1.6);
+    verticalParticleOffset.push_back(1.66);
+    verticalParticleOffset.push_back(1.72);
+    verticalParticleOffset.push_back(1.78);
+    verticalParticleOffset.push_back(1.84);
+    verticalParticleOffset.push_back(1.9);
+    verticalParticleOffset.push_back(1.96);
+    verticalParticleOffset.push_back(2.02);
+    verticalParticleOffset.push_back(2.08);
+    verticalParticleOffset.push_back(2.14);
+    verticalParticleOffset.push_back(2.2);
+
+    //definition of each particles rotation
+    std::vector<float> rotationOffset = std::vector<float>();
+
+    //addition of each original rotation status for the flame
+
+    for(int i = 0 ; i < 25 ; i++)
+        rotationOffset.push_back(0.0);
+
+    //definition of the flame color
+
+    std::vector<glm::vec4> particlesColor = std::vector<glm::vec4>();
+
+    for(int i = 0 ; i < 25 ; i++)
+        particlesColor.push_back(glm::vec4(1.0f,1.0f,0.0f,0.1f));
+
     bool isOpened = true;
 
     //Main application loop
@@ -177,12 +260,12 @@ int main(int argc, char *argv[])
 
         //definition of the projection matrix same for all painted elements
 
-        glm::vec3 cameraPos(-4.f,2.f, 0);
+        glm::vec3 cameraPos(-4.f,3.f, 0);
         glm::vec3 cameraTarget(0, 0, 0);
         glm::vec3 cameraUp(1.f, 1.f, 0.f);
 
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-        glm::mat4 proj = glm::perspective(glm::radians(45.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
+        glm::mat4 proj = glm::perspective(glm::radians(60.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 
         //inputing the mvp matrix into the shader
         glm::mat4 mvp = proj*view;
@@ -224,8 +307,8 @@ int main(int argc, char *argv[])
 
         //modification of the transformation matrix to place the logs
         shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,3.14f/8.f,glm::vec3(1.f,0.f,0.f));
+        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.0f,0.75f,0.0f));
         shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.3f,0.3f,1.5f));
-        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.0f,2.f,0.0f));
 
         //log drawing loop
 
@@ -258,12 +341,14 @@ int main(int argc, char *argv[])
         shapeColor = glm::vec4(0.46f,0.46f,0.46f,1.f);
         glUniform4fv(uColor,1,glm::value_ptr(shapeColor));
 
+
         //modification of the transformation matrix to place the rocks
+        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(-1.17f,0.45f,0.f));
         shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.4f,0.4f,0.4f));
-        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(-2.9f,0.7f,0.f));
 
         //rocks drawing loop and reset of the pre rotation matrix
         preRotation = glm::mat4(1.f);
+
         for(int i = 0 ;i<=19 ; i++ )
         {
             glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
@@ -278,6 +363,62 @@ int main(int argc, char *argv[])
 
             preRotation = glm::rotate(preRotation,(2.f*3.14f/19.f),glm::vec3(0.f,1.f,0.f));
         }
+
+        //end of the rock drawing section
+
+        //begin of the flame drawing section
+
+        for(int i = 0 ;i<25 ; i++ )
+        {
+            //color selection
+            glUniform4fv(uColor,1,glm::value_ptr(particlesColor.at(i)));
+
+            //reinitialisation of the transformation matrix and adaptation to the current particle
+
+            shapeTransformationMatrix = glm::mat4(1.f);
+
+            shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,rotationOffset.at(0),glm::vec3(0.0f,1.0f,0.0f));
+
+            //lateral offset
+            shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(lateralOffset.at(i).first,0.f,lateralOffset.at(i).second));
+            //addition of the vertical offset
+            shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.f,verticalParticleOffset.at(i),0.f));
+
+            shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.25f,0.25f,0.25f));
+
+            GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
+            glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(shapeTransformationMatrix));
+
+            //figure draw
+
+            glDrawArrays(GL_TRIANGLES, log.getNbVertices()+rock.getNbVertices() , flameParticle.getNbVertices());
+
+            //rotation to draw the next log
+        }
+
+        //update of vertical position and rotation status for each fire particles
+
+        for(int i = 0 ; i<verticalParticleOffset.size() ; i++)
+        {
+            //updating position
+
+            if(verticalParticleOffset.at(i) < 2.2)
+                verticalParticleOffset.at(i) += 0.045;
+            else
+                verticalParticleOffset.at(i) = 0.7;
+
+            //updating rotation
+            rotationOffset.at(i) =  2*(verticalParticleOffset.at(i)-0.7);
+
+            //updating color
+            if(((verticalParticleOffset.at(i)/2)-1.1)>0)
+                particlesColor.at(i) = glm::vec4((2.2f - (verticalParticleOffset.at(i)/2)-1.1) ,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
+            else
+                particlesColor.at(i) = glm::vec4(1.0f,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
+
+        }
+
+        //end of the flame drawing section
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glUseProgram(0);
