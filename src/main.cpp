@@ -170,31 +170,31 @@ int main(int argc, char *argv[])
 
     //addition of the departure point of each particle
 
-    verticalParticleOffset.push_back(0.7);
+    verticalParticleOffset.push_back(1.18);
+    verticalParticleOffset.push_back(2.08);
+    verticalParticleOffset.push_back(1.42);
     verticalParticleOffset.push_back(0.76);
-    verticalParticleOffset.push_back(0.82);
     verticalParticleOffset.push_back(0.88);
+    verticalParticleOffset.push_back(1.84);
+    verticalParticleOffset.push_back(1.72);
+    verticalParticleOffset.push_back(1.48);
+    verticalParticleOffset.push_back(1.78);
+    verticalParticleOffset.push_back(2.2);
     verticalParticleOffset.push_back(0.94);
+    verticalParticleOffset.push_back(1.6);
+    verticalParticleOffset.push_back(1.54);
+    verticalParticleOffset.push_back(1.66);
+    verticalParticleOffset.push_back(1.24);
+    verticalParticleOffset.push_back(0.7);
+    verticalParticleOffset.push_back(1.9);
+    verticalParticleOffset.push_back(2.14);
+    verticalParticleOffset.push_back(1.36);
+    verticalParticleOffset.push_back(1.3);
+    verticalParticleOffset.push_back(0.82);
+    verticalParticleOffset.push_back(2.02);
+    verticalParticleOffset.push_back(1.96);
     verticalParticleOffset.push_back(1.06);
     verticalParticleOffset.push_back(1.12);
-    verticalParticleOffset.push_back(1.18);
-    verticalParticleOffset.push_back(1.24);
-    verticalParticleOffset.push_back(1.3);
-    verticalParticleOffset.push_back(1.36);
-    verticalParticleOffset.push_back(1.42);
-    verticalParticleOffset.push_back(1.48);
-    verticalParticleOffset.push_back(1.54);
-    verticalParticleOffset.push_back(1.6);
-    verticalParticleOffset.push_back(1.66);
-    verticalParticleOffset.push_back(1.72);
-    verticalParticleOffset.push_back(1.78);
-    verticalParticleOffset.push_back(1.84);
-    verticalParticleOffset.push_back(1.9);
-    verticalParticleOffset.push_back(1.96);
-    verticalParticleOffset.push_back(2.02);
-    verticalParticleOffset.push_back(2.08);
-    verticalParticleOffset.push_back(2.14);
-    verticalParticleOffset.push_back(2.2);
 
     //definition of each particles rotation
     std::vector<float> rotationOffset = std::vector<float>();
@@ -377,7 +377,7 @@ int main(int argc, char *argv[])
 
             shapeTransformationMatrix = glm::mat4(1.f);
 
-            shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,rotationOffset.at(0),glm::vec3(0.0f,1.0f,0.0f));
+            //shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,rotationOffset.at(0),glm::vec3(0.0f,1.0f,0.0f));
 
             //lateral offset
             shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(lateralOffset.at(i).first,0.f,lateralOffset.at(i).second));
@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
             //updating position
 
             if(verticalParticleOffset.at(i) < 2.2)
-                verticalParticleOffset.at(i) += 0.045;
+                verticalParticleOffset.at(i) += 0.06;
             else
                 verticalParticleOffset.at(i) = 0.7;
 
