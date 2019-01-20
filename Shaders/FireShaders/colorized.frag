@@ -6,5 +6,5 @@ varying vec4 varyColor;
 
 void main()
 {
-    //gl_FragColor = varyColor;
+    gl_FragColor = varyColor;
 }

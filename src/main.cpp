@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     glViewport(0, 0, WIDTH, HEIGHT); //Draw on ALL the screen
 
     //The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
-    glClearColor(0.0, 0.0, 0.0, 1.0); //Full Black
+    glClearColor(1.0, 1.0, 1.0, 1.0); //Full White
 
     glEnable(GL_DEPTH_TEST); //Active the depth test
 
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 
         //color affectation :
 
-        glm::vec3 shapeColor(1.0,1.0,1.0);
+        glm::vec3 shapeColor(0.34f,0.06f,0.f);
 
         GLint uColor = glGetUniformLocation(colorShader->getProgramID(),"uColor");
         glUniform3fv(uColor,1,glm::value_ptr(shapeColor));
@@ -189,14 +189,13 @@ int main(int argc, char *argv[])
         //definition of the modification matrix associated with logs
 
         glm::mat4 cylinderTransformationMatrix(1.0f);
-
-        GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
-        glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(cylinderTransformationMatrix));
-
+        cylinderTransformationMatrix = glm::rotate(cylinderTransformationMatrix,3.14f/8.f,glm::vec3(1.f,0.f,0.f));
+        cylinderTransformationMatrix = glm::scale(cylinderTransformationMatrix,glm::vec3(0.3f,0.3f,1.5f));
+        cylinderTransformationMatrix = glm::translate(cylinderTransformationMatrix,glm::vec3(0.0f,2.f,0.0f));
 
         //definition of the projection matrix
 
-        glm::vec3 cameraPos(-1.f, 1.f, 0);
+        glm::vec3 cameraPos(-3.f, 3.f, 0);
         glm::vec3 cameraTarget(0, 0, 0);
         glm::vec3 cameraUp(0.f, 1.f, 0.f);
 
@@ -208,9 +207,24 @@ int main(int argc, char *argv[])
         GLint uMVP = glGetUniformLocation(colorShader->getProgramID(), "uMvp");
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
 
-        //figure draw
 
-        glDrawArrays(GL_TRIANGLES, 0, log.getNbVertices());
+        //log drawing loop
+
+        glm::mat4 preRotation(1.f);
+        for(int i = 0 ;i<9 ; i++ )
+        {
+            glm::mat4 finalCylinderTranform = preRotation*cylinderTransformationMatrix;
+            GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
+            glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(finalCylinderTranform));
+
+            //figure draw
+
+            glDrawArrays(GL_TRIANGLES, 0, log.getNbVertices());
+
+            //rotation to draw the next log
+
+            preRotation = glm::rotate(preRotation,(2.f*3.14f/8.f),glm::vec3(0.f,1.f,0.f));
+        }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glUseProgram(0);
