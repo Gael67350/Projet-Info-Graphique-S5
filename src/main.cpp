@@ -79,30 +79,32 @@ int main(int argc, char *argv[])
 
     glBufferData(GL_ARRAY_BUFFER, (3*2 + 2)*sizeof(float) * nbVerticesTot , NULL , GL_DYNAMIC_DRAW );
 
-    int currentlyInserted = 0;
+    int currentOffset = 0;
 
-    //insertion of cylinder data in the VBO
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)* log.getNbVertices() , log.getVertices());
-    currentlyInserted += 3 * sizeof(float)* log.getNbVertices();
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)* log.getNbVertices() , log.getNormals());
-    currentlyInserted += 3 * sizeof(float)* log.getNbVertices();
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* log.getNbVertices() , log.getUVs());
-    currentlyInserted += 2 * sizeof(float)* log.getNbVertices();
+    //insertion of vertices data in the VBO
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 3 * sizeof(float)* log.getNbVertices() , log.getVertices());
+    currentOffset += 3 * sizeof(float)* log.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 3 * sizeof(float)*rock.getNbVertices() , rock.getVertices());
+    currentOffset += 3 * sizeof(float)* rock.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 3*sizeof(float)*flameParticle.getNbVertices(),flameParticle.getVertices());
+    currentOffset += 3 * sizeof(float)* flameParticle.getNbVertices();
 
-    //insertion of sphere data in the VBO
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)*rock.getNbVertices() , rock.getVertices());
-    currentlyInserted += 3 * sizeof(float)* rock.getNbVertices();
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float)* rock.getNbVertices() , rock.getNormals());
-    currentlyInserted += 3 * sizeof(float)* rock.getNbVertices();
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* rock.getNbVertices() , rock.getUVs());
-    currentlyInserted += 2 * sizeof(float)* rock.getNbVertices();
 
-    //insertion of cube sphere in the VBO
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3*sizeof(float)*flameParticle.getNbVertices(),flameParticle.getVertices());
-    currentlyInserted += 3 * sizeof(float)* flameParticle.getNbVertices();
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 3 * sizeof(float) * flameParticle.getNbVertices() , flameParticle.getNormals());
-    currentlyInserted += 3 * sizeof(float)* flameParticle.getNbVertices();
-    glBufferSubData(GL_ARRAY_BUFFER, currentlyInserted , 2 * sizeof(float)* flameParticle.getNbVertices() , flameParticle.getUVs());
+    //insertion of normal data in the VBO
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 3 * sizeof(float)* log.getNbVertices() , log.getNormals());
+    currentOffset += 3 * sizeof(float)* log.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 3 * sizeof(float)* rock.getNbVertices() , rock.getNormals());
+    currentOffset += 3 * sizeof(float)* rock.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 3 * sizeof(float) * flameParticle.getNbVertices() , flameParticle.getNormals());
+    currentOffset += 3 * sizeof(float)* flameParticle.getNbVertices();
+
+
+    //insertion of UV data in the VBO
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 2 * sizeof(float)* log.getNbVertices() , log.getUVs());
+    currentOffset += 2 * sizeof(float)* log.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 2 * sizeof(float)* rock.getNbVertices() , rock.getUVs());
+    currentOffset += 2 * sizeof(float)* rock.getNbVertices();
+    glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 2 * sizeof(float)* flameParticle.getNbVertices() , flameParticle.getUVs());
 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -164,56 +166,73 @@ int main(int argc, char *argv[])
         glUseProgram(colorShader->getProgramID());
         glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
 
-        //logs display
-        //selection of datas in the VBOS
+        //definition of the vars passed to the shader
 
         GLint vPosition = glGetAttribLocation(colorShader->getProgramID(),"vPosition");
-        glVertexAttribPointer(vPosition,3,GL_FLOAT,GL_FALSE,0,INDICE_TO_PTR(0));
-        glEnableVertexAttribArray(vPosition);
-
         GLint vNormals = glGetAttribLocation(colorShader->getProgramID(),"vNormals");
-        glVertexAttribPointer(vNormals,3,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR(3 * sizeof(float)* log.getNbVertices()));
-        glEnableVertexAttribArray(vNormals);
-
         GLint vUV = glGetAttribLocation(colorShader->getProgramID(),"vUV");
-        glVertexAttribPointer(vUV,2,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR(6 * sizeof(float)* log.getNbVertices()));
-        glEnableVertexAttribArray(vUV);
-
-        //color affectation :
-
-        glm::vec3 shapeColor(0.34f,0.06f,0.f);
-
         GLint uColor = glGetUniformLocation(colorShader->getProgramID(),"uColor");
-        glUniform3fv(uColor,1,glm::value_ptr(shapeColor));
 
-        //definition of the modification matrix associated with logs
+        //definition of the global modification matrix used
 
-        glm::mat4 cylinderTransformationMatrix(1.0f);
-        cylinderTransformationMatrix = glm::rotate(cylinderTransformationMatrix,3.14f/8.f,glm::vec3(1.f,0.f,0.f));
-        cylinderTransformationMatrix = glm::scale(cylinderTransformationMatrix,glm::vec3(0.3f,0.3f,1.5f));
-        cylinderTransformationMatrix = glm::translate(cylinderTransformationMatrix,glm::vec3(0.0f,2.f,0.0f));
+        //definition of the projection matrix same for all painted elements
 
-        //definition of the projection matrix
-
-        glm::vec3 cameraPos(-3.f, 3.f, 0);
+        glm::vec3 cameraPos(-4.f,2.f, 0);
         glm::vec3 cameraTarget(0, 0, 0);
-        glm::vec3 cameraUp(0.f, 1.f, 0.f);
+        glm::vec3 cameraUp(1.f, 1.f, 0.f);
 
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
         glm::mat4 proj = glm::perspective(glm::radians(45.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 
+        //inputing the mvp matrix into the shader
         glm::mat4 mvp = proj*view;
 
         GLint uMVP = glGetUniformLocation(colorShader->getProgramID(), "uMvp");
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
 
+        //shape transformation matrix to move the different objects
+
+        glm::mat4 shapeTransformationMatrix(1.0f);
+
+        //definition of a variable to store the current reading offset (reusing the one used before for the insertion)
+        currentOffset = 0;
+
+
+        //logs display
+        //selection of datas in the VBOS
+
+
+        glVertexAttribPointer(vPosition,3,GL_FLOAT,GL_FALSE,0,INDICE_TO_PTR(0));
+        glEnableVertexAttribArray(vPosition);
+
+        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+
+        glVertexAttribPointer(vNormals,3,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR((void*)(currentOffset)));
+        glEnableVertexAttribArray(vNormals);
+
+        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+
+        glVertexAttribPointer(vUV,2,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR((void*)(currentOffset)));
+        glEnableVertexAttribArray(vUV);
+
+        currentOffset += 2 * sizeof(float)* nbVerticesTot;
+
+        //color affectation :
+
+        glm::vec4 shapeColor(0.34f,0.06f,0.f,1.f);
+        glUniform4fv(uColor,1,glm::value_ptr(shapeColor));
+
+        //modification of the transformation matrix to place the logs
+        shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,3.14f/8.f,glm::vec3(1.f,0.f,0.f));
+        shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.3f,0.3f,1.5f));
+        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.0f,2.f,0.0f));
 
         //log drawing loop
 
         glm::mat4 preRotation(1.f);
         for(int i = 0 ;i<9 ; i++ )
         {
-            glm::mat4 finalCylinderTranform = preRotation*cylinderTransformationMatrix;
+            glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
             GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
             glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(finalCylinderTranform));
 
@@ -224,6 +243,40 @@ int main(int argc, char *argv[])
             //rotation to draw the next log
 
             preRotation = glm::rotate(preRotation,(2.f*3.14f/8.f),glm::vec3(0.f,1.f,0.f));
+        }
+
+        //end of the log drawing section
+
+        //reinitialisation of the transformation matrix
+
+        shapeTransformationMatrix = glm::mat4(1.f);
+
+        //begin of the rocks drawing section
+
+        //color affectation for the rock (reusage of the precedent one and temporary before texture).
+
+        shapeColor = glm::vec4(0.46f,0.46f,0.46f,1.f);
+        glUniform4fv(uColor,1,glm::value_ptr(shapeColor));
+
+        //modification of the transformation matrix to place the rocks
+        shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.4f,0.4f,0.4f));
+        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(-2.9f,0.7f,0.f));
+
+        //rocks drawing loop and reset of the pre rotation matrix
+        preRotation = glm::mat4(1.f);
+        for(int i = 0 ;i<=19 ; i++ )
+        {
+            glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
+            GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
+            glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(finalCylinderTranform));
+
+            //figure draw
+
+            glDrawArrays(GL_TRIANGLES, log.getNbVertices(), rock.getNbVertices());
+
+            //rotation to draw the next log
+
+            preRotation = glm::rotate(preRotation,(2.f*3.14f/19.f),glm::vec3(0.f,1.f,0.f));
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
