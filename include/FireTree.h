@@ -10,7 +10,7 @@ class FireTree {
 public:
 	FireTree(uint32_t nbLatitude = 50);
 
-	bool draw(Shader* shader, Camera &camera, glm::vec3 const &position = {0,0,0}) const;
+	bool draw(Shader* shader, Camera &camera, glm::vec3 const &position = {0,0,0}, float const &scaling = 1.f) const;
 
 	const float* getVertices() const { return &m_vertices[0]; }
 

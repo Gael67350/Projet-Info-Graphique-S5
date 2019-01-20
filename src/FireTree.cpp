@@ -56,14 +56,15 @@ FireTree::FireTree(uint32_t nbLatitude) {
 	}
 }
 
-bool FireTree::draw(Shader* shader, Camera &camera, glm::vec3 const &position) const {
+bool FireTree::draw(Shader* shader, Camera &camera, glm::vec3 const &position, float const &scaling) const {
 	float angleRad = 90 * (M_PI / 180.f);
 
 	glm::mat4 id(1.f);
 
 	// Trunk transformations
 	glm::mat4 trunkRotation = glm::rotate(id, -angleRad, glm::vec3(1.f, 0, 0));
-	glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(0.75f, 0.75f, 4.f));
+	//glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(0.75f, 0.75f, 4.f));
+	glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(scaling * 0.75f, scaling * 0.75f, scaling * 4.f));
 	glm::mat4 trunkModel = glm::translate(trunkScaling, glm::vec3(-position.x, -position.y, -position.z));
 
 	// Leaves transformations
