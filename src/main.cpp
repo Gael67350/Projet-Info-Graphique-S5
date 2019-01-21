@@ -285,6 +285,12 @@ int main(int argc, char *argv[])
     for(int i = 0 ; i < 50 ; i++)
         particlesColor.push_back(glm::vec4(1.0f,1.0f,0.0f,0.1f));
 
+    //definition of the wind offset for the flame
+
+    std::vector<float> windOffset;
+    for(int i = 0 ; i<50 ; i++)
+        windOffset.push_back(0.0);
+
     bool isOpened = true;
 
     //Main application loop
@@ -455,8 +461,8 @@ int main(int argc, char *argv[])
 
             //lateral offset
             shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(lateralOffset.at(i).first,0.f,lateralOffset.at(i).second));
-            //addition of the vertical offset
-            shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.f,verticalParticleOffset.at(i),0.f));
+            //addition of the vertical and wind offset
+            shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.f,verticalParticleOffset.at(i),windOffset.at(i)));
 
             shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(ParticleSize,ParticleSize,ParticleSize));
 
@@ -480,6 +486,13 @@ int main(int argc, char *argv[])
                 verticalParticleOffset.at(i) += 0.06;
             else
                 verticalParticleOffset.at(i) = 0.7;
+
+            //wind simulation
+
+            if(verticalParticleOffset.at(i) > 0.7)
+                windOffset.at(i) += 0.03*(verticalParticleOffset.at(i)/3.7);
+            else
+                windOffset.at(i) = 0.0;
 
             //updating rotation
             rotationOffset.at(i) =  2*(verticalParticleOffset.at(i)-0.7);
