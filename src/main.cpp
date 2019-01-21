@@ -22,6 +22,9 @@
 
 //other native c++ library used in the program
 #include<vector>
+#include<algorithm>
+#include <random>
+#include <chrono>
 
 #define WIDTH     800
 #define HEIGHT    600
@@ -134,81 +137,152 @@ int main(int argc, char *argv[])
     //definition of the lateral offset
     std::vector<std::pair<float,float>> lateralOffset = std::vector<std::pair<float,float>>();
 
+    //definition of variables for particles parameters
+    float ParticleSize = 0.3;
+    float bigDistance = 0.2;
+    float smallDistance = 0.4;
+
+    //first particle set
+
     //middle point
     lateralOffset.push_back(std::make_pair(0.f,0.f));
 
     //first layer
-    lateralOffset.push_back(std::make_pair(0.f,0.3f));
-    lateralOffset.push_back(std::make_pair(0.3f,0.f));
-    lateralOffset.push_back(std::make_pair(0.3f,0.3f));
-    lateralOffset.push_back(std::make_pair(0.f,-0.3f));
-    lateralOffset.push_back(std::make_pair(-0.3f,0.f));
-    lateralOffset.push_back(std::make_pair(-0.3f,-0.3f));
-    lateralOffset.push_back(std::make_pair(-0.3f,0.3f));
-    lateralOffset.push_back(std::make_pair(0.3f,-0.3f));
+    lateralOffset.push_back(std::make_pair(0.f,smallDistance));
+    lateralOffset.push_back(std::make_pair(smallDistance,0.f));
+    lateralOffset.push_back(std::make_pair(smallDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(0.f,-smallDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,0.f));
+    lateralOffset.push_back(std::make_pair(-smallDistance,-smallDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(smallDistance,-smallDistance));
 
     //second layer
-    lateralOffset.push_back(std::make_pair(0.3f,0.6f));
-    lateralOffset.push_back(std::make_pair(0.6f,0.6f));
-    lateralOffset.push_back(std::make_pair(0.6f,0.3f));
-    lateralOffset.push_back(std::make_pair(0.6f,0.f));
-    lateralOffset.push_back(std::make_pair(0.6f,-0.3f));
-    lateralOffset.push_back(std::make_pair(0.6f,-0.6f));
-    lateralOffset.push_back(std::make_pair(0.3f,-0.6f));
-    lateralOffset.push_back(std::make_pair(0.0f,-0.6f));
-    lateralOffset.push_back(std::make_pair(-0.3f,-0.6f));
-    lateralOffset.push_back(std::make_pair(-0.6f,-0.6f));
-    lateralOffset.push_back(std::make_pair(-0.6f,-0.3f));
-    lateralOffset.push_back(std::make_pair(-0.6f,0.f));
-    lateralOffset.push_back(std::make_pair(-0.6f,0.3f));
-    lateralOffset.push_back(std::make_pair(-0.6f,0.6f));
-    lateralOffset.push_back(std::make_pair(-0.3f,0.6f));
-    lateralOffset.push_back(std::make_pair(0.0f,0.6f));
+    lateralOffset.push_back(std::make_pair(smallDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,0.f));
+    lateralOffset.push_back(std::make_pair(bigDistance,-smallDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(smallDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(0.0f,-bigDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,-smallDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,0.f));
+    lateralOffset.push_back(std::make_pair(-bigDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(0.0f,bigDistance));
+
+    //second particle set
+
+    //middle point
+    lateralOffset.push_back(std::make_pair(0.f,0.f));
+
+    //first layer
+    lateralOffset.push_back(std::make_pair(0.f,smallDistance));
+    lateralOffset.push_back(std::make_pair(smallDistance,0.f));
+    lateralOffset.push_back(std::make_pair(smallDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(0.f,-smallDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,0.f));
+    lateralOffset.push_back(std::make_pair(-smallDistance,-smallDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(smallDistance,-smallDistance));
+
+    //second layer
+    lateralOffset.push_back(std::make_pair(smallDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,0.f));
+    lateralOffset.push_back(std::make_pair(bigDistance,-smallDistance));
+    lateralOffset.push_back(std::make_pair(bigDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(smallDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(0.0f,-bigDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,-bigDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,-smallDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,0.f));
+    lateralOffset.push_back(std::make_pair(-bigDistance,smallDistance));
+    lateralOffset.push_back(std::make_pair(-bigDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(-smallDistance,bigDistance));
+    lateralOffset.push_back(std::make_pair(0.0f,bigDistance));
+
 
     //definition of the vertical offset of each particles
     std::vector<float> verticalParticleOffset = std::vector<float>() ;
 
     //addition of the departure point of each particle
 
-    verticalParticleOffset.push_back(1.18);
-    verticalParticleOffset.push_back(2.08);
-    verticalParticleOffset.push_back(1.42);
-    verticalParticleOffset.push_back(0.76);
-    verticalParticleOffset.push_back(0.88);
-    verticalParticleOffset.push_back(1.84);
-    verticalParticleOffset.push_back(1.72);
-    verticalParticleOffset.push_back(1.48);
-    verticalParticleOffset.push_back(1.78);
-    verticalParticleOffset.push_back(2.2);
-    verticalParticleOffset.push_back(0.94);
-    verticalParticleOffset.push_back(1.6);
-    verticalParticleOffset.push_back(1.54);
-    verticalParticleOffset.push_back(1.66);
-    verticalParticleOffset.push_back(1.24);
+
     verticalParticleOffset.push_back(0.7);
-    verticalParticleOffset.push_back(1.9);
-    verticalParticleOffset.push_back(2.14);
-    verticalParticleOffset.push_back(1.36);
-    verticalParticleOffset.push_back(1.3);
+    verticalParticleOffset.push_back(0.76);
     verticalParticleOffset.push_back(0.82);
-    verticalParticleOffset.push_back(2.02);
-    verticalParticleOffset.push_back(1.96);
+    verticalParticleOffset.push_back(0.88);
+    verticalParticleOffset.push_back(0.94);
     verticalParticleOffset.push_back(1.06);
     verticalParticleOffset.push_back(1.12);
+    verticalParticleOffset.push_back(1.18);
+    verticalParticleOffset.push_back(1.24);
+    verticalParticleOffset.push_back(1.3);
+    verticalParticleOffset.push_back(1.36);
+    verticalParticleOffset.push_back(1.42);
+    verticalParticleOffset.push_back(1.48);
+    verticalParticleOffset.push_back(1.54);
+    verticalParticleOffset.push_back(1.6);
+    verticalParticleOffset.push_back(1.66);
+    verticalParticleOffset.push_back(1.72);
+    verticalParticleOffset.push_back(1.78);
+    verticalParticleOffset.push_back(1.84);
+    verticalParticleOffset.push_back(1.9);
+    verticalParticleOffset.push_back(1.96);
+    verticalParticleOffset.push_back(2.02);
+    verticalParticleOffset.push_back(2.08);
+    verticalParticleOffset.push_back(2.14);
+    verticalParticleOffset.push_back(2.2);
+    verticalParticleOffset.push_back(2.26);
+    verticalParticleOffset.push_back(2.32);
+    verticalParticleOffset.push_back(2.38);
+    verticalParticleOffset.push_back(2.44);
+    verticalParticleOffset.push_back(2.5);
+    verticalParticleOffset.push_back(2.56);
+    verticalParticleOffset.push_back(2.62);
+    verticalParticleOffset.push_back(2.68);
+    verticalParticleOffset.push_back(2.74);
+    verticalParticleOffset.push_back(2.8);
+    verticalParticleOffset.push_back(2.86);
+    verticalParticleOffset.push_back(2.92);
+    verticalParticleOffset.push_back(2.98);
+    verticalParticleOffset.push_back(3.04);
+    verticalParticleOffset.push_back(3.1);
+    verticalParticleOffset.push_back(3.16);
+    verticalParticleOffset.push_back(3.22);
+    verticalParticleOffset.push_back(3.28);
+    verticalParticleOffset.push_back(3.34);
+    verticalParticleOffset.push_back(3.4);
+    verticalParticleOffset.push_back(3.46);
+    verticalParticleOffset.push_back(3.52);
+    verticalParticleOffset.push_back(3.58);
+    verticalParticleOffset.push_back(3.64);
+    verticalParticleOffset.push_back(3.7);
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+    std::shuffle(verticalParticleOffset.begin(),verticalParticleOffset.end(),std::default_random_engine(seed));
 
     //definition of each particles rotation
     std::vector<float> rotationOffset = std::vector<float>();
 
     //addition of each original rotation status for the flame
 
-    for(int i = 0 ; i < 25 ; i++)
+    for(int i = 0 ; i < 50 ; i++)
         rotationOffset.push_back(0.0);
 
     //definition of the flame color
 
     std::vector<glm::vec4> particlesColor = std::vector<glm::vec4>();
 
-    for(int i = 0 ; i < 25 ; i++)
+    for(int i = 0 ; i < 50 ; i++)
         particlesColor.push_back(glm::vec4(1.0f,1.0f,0.0f,0.1f));
 
     bool isOpened = true;
@@ -260,12 +334,12 @@ int main(int argc, char *argv[])
 
         //definition of the projection matrix same for all painted elements
 
-        glm::vec3 cameraPos(-4.f,3.f, 0);
+        glm::vec3 cameraPos(-10.f,10.f, 0);
         glm::vec3 cameraTarget(0, 0, 0);
         glm::vec3 cameraUp(1.f, 1.f, 0.f);
 
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-        glm::mat4 proj = glm::perspective(glm::radians(60.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
+        glm::mat4 proj = glm::perspective(glm::radians(40.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 
         //inputing the mvp matrix into the shader
         glm::mat4 mvp = proj*view;
@@ -368,7 +442,7 @@ int main(int argc, char *argv[])
 
         //begin of the flame drawing section
 
-        for(int i = 0 ;i<25 ; i++ )
+        for(int i = 0 ;i<verticalParticleOffset.size() ; i++ )
         {
             //color selection
             glUniform4fv(uColor,1,glm::value_ptr(particlesColor.at(i)));
@@ -384,7 +458,7 @@ int main(int argc, char *argv[])
             //addition of the vertical offset
             shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.f,verticalParticleOffset.at(i),0.f));
 
-            shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.25f,0.25f,0.25f));
+            shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(ParticleSize,ParticleSize,ParticleSize));
 
             GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
             glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(shapeTransformationMatrix));
@@ -402,7 +476,7 @@ int main(int argc, char *argv[])
         {
             //updating position
 
-            if(verticalParticleOffset.at(i) < 2.2)
+            if(verticalParticleOffset.at(i) <= 3.7)
                 verticalParticleOffset.at(i) += 0.06;
             else
                 verticalParticleOffset.at(i) = 0.7;
@@ -411,8 +485,10 @@ int main(int argc, char *argv[])
             rotationOffset.at(i) =  2*(verticalParticleOffset.at(i)-0.7);
 
             //updating color
-            if(((verticalParticleOffset.at(i)/2)-1.1)>0)
-                particlesColor.at(i) = glm::vec4((2.2f - (verticalParticleOffset.at(i)/2)-1.1) ,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
+            if(verticalParticleOffset.at(i) < 0.8)
+                particlesColor.at(i) = glm::vec4(0.f,0.f,1.f,0.1f);
+            else if(((verticalParticleOffset.at(i)/2)-1.5)>0)
+                particlesColor.at(i) = glm::vec4((3.5f - (verticalParticleOffset.at(i)/2)-1.5f) ,1.5f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
             else
                 particlesColor.at(i) = glm::vec4(1.0f,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
 
