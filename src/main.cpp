@@ -1,6 +1,7 @@
 //SDL Libraries
 #include <SDL2/SDL.h>
 //#include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_image.h>
 
 //OpenGL Libraries
 #include <GL/glew.h>
@@ -142,6 +143,44 @@ int main(int argc, char *argv[])
 
     if(colorShader == NULL || textureShader == NULL)
         return EXIT_FAILURE;
+
+    //loading the texture images related with the fire model
+    if (!(IMG_Init(IMG_INIT_JPG)&IMG_INIT_JPG))
+    {
+      ERROR("could not load SDL2_image with JPG files \n");
+      return EXIT_FAILURE;
+    }
+
+    SDL_Surface* imgLog = IMG_Load("Ressources/log.jpg");
+    SDL_Surface* imgRock = IMG_Load("Ressources/rock.jpg");
+
+    SDL_Surface* logRGB = SDL_ConvertSurfaceFormat(imgLog, SDL_PIXELFORMAT_RGBA8888, 0);
+    SDL_Surface* rockRGB = SDL_ConvertSurfaceFormat(imgRock, SDL_PIXELFORMAT_RGBA8888, 0);
+
+    SDL_FreeSurface(imgLog);
+    SDL_FreeSurface(imgRock);
+
+    //texture definition
+    GLuint textureArray;
+
+    glGenTextures(2, &textureArray);
+    glBindTexture(GL_TEXTURE_2D, textureArray);
+
+    //loading textures
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, logRGB->w, logRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)logRGB->pixels);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rockRGB->w, rockRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)rockRGB->pixels);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 1);
+
 
     //definition of the lateral offset of the fire particles
     std::vector<std::pair<float,float>> lateralOffset = std::vector<std::pair<float,float>>();
@@ -364,6 +403,7 @@ int main(int argc, char *argv[])
         GLint vUV = glGetAttribLocation(textureShader->getProgramID(), "vUV");
         GLint uColor = glGetUniformLocation(textureShader->getProgramID(), "uColor");
         GLint uMVP = glGetUniformLocation(textureShader->getProgramID(), "uMvp");
+        GLuint uTexture = glGetAttribLocation(textureShader->getProgramID(), "uTexture");
 
 
         //selection of datas in the VBOS
@@ -392,7 +432,7 @@ int main(int argc, char *argv[])
         glm::vec3 cameraUp(1.f, 1.f, 0.f);
 
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-        glm::mat4 proj = glm::perspective(glm::radians(40.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
+        glm::mat4 proj = glm::perspective(glm::radians(110.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 
         //inputing the mvp matrix into the shader
         glm::mat4 mvp = proj*view;
@@ -406,10 +446,11 @@ int main(int argc, char *argv[])
 
         //logs display
 
-        //color affectation :
+        //texture affectation
 
-        glm::vec4 shapeColor(0.34f,0.06f,0.f,1.f);
-        glUniform4fv(uColor,1,glm::value_ptr(shapeColor));
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureArray);
+        glUniform1i(uTexture, 0);
 
         //modification of the transformation matrix to place the logs
         shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,3.14f/8.f,glm::vec3(1.f,0.f,0.f));
@@ -442,11 +483,12 @@ int main(int argc, char *argv[])
 
         //begin of the rocks drawing section
 
-        //color affectation for the rock (reusage of the precedent one and temporary before texture).
+        //texture affectation for the rock
 
-        shapeColor = glm::vec4(0.46f,0.46f,0.46f,1.f);
-        glUniform4fv(uColor,1,glm::value_ptr(shapeColor));
-
+        //texture affectation
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, textureArray);
+        glUniform1i(uTexture, 0);
 
         //modification of the transformation matrix to place the rocks
         shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(-1.17f,0.45f,0.f));
