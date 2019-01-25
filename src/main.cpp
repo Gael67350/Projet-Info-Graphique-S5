@@ -138,9 +138,21 @@ int main(int argc, char *argv[])
     std::vector<std::pair<float,float>> lateralOffset = std::vector<std::pair<float,float>>();
 
     //definition of variables for particles parameters
-    float ParticleSize = 0.3;
     float bigDistance = 0.2;
     float smallDistance = 0.4;
+
+    //definition of a vector containing the current size of each fire particle default value is 0.3
+    std::vector<float> particleSize = std::vector<float>();
+
+    for(int i = 0 ; i<50 ; i++)
+    {
+        particleSize.push_back(0.3);
+    }
+
+    //definition of the variable aossciated with wind simulation
+     float windMaxOffset = 0.03;
+     float currentWindOffset = 0.0;
+     bool windDirection = true;
 
     //first particle set
 
@@ -464,7 +476,7 @@ int main(int argc, char *argv[])
             //addition of the vertical and wind offset
             shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.f,verticalParticleOffset.at(i),windOffset.at(i)));
 
-            shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(ParticleSize,ParticleSize,ParticleSize));
+            shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(particleSize.at(i),particleSize.at(i),particleSize.at(i)));
 
             GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
             glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(shapeTransformationMatrix));
@@ -478,6 +490,21 @@ int main(int argc, char *argv[])
 
         //update of vertical position and rotation status for each fire particles
 
+        //windVariation
+        if(windDirection)
+        {
+            currentWindOffset += 0.0002;
+            if(currentWindOffset >= windMaxOffset)
+                windDirection = false;
+        }
+        else
+        {
+            currentWindOffset -= 0.0002;
+            if(currentWindOffset <= 0)
+                windDirection = true;
+        }
+
+
         for(int i = 0 ; i<verticalParticleOffset.size() ; i++)
         {
             //updating position
@@ -487,10 +514,9 @@ int main(int argc, char *argv[])
             else
                 verticalParticleOffset.at(i) = 0.7;
 
-            //wind simulation
-
+            //wind application to the flame
             if(verticalParticleOffset.at(i) > 0.7)
-                windOffset.at(i) += 0.03*(verticalParticleOffset.at(i)/3.7);
+                windOffset.at(i) += currentWindOffset*(verticalParticleOffset.at(i)/3.7);
             else
                 windOffset.at(i) = 0.0;
 
@@ -504,6 +530,8 @@ int main(int argc, char *argv[])
                 particlesColor.at(i) = glm::vec4((3.5f - (verticalParticleOffset.at(i)/2)-1.5f) ,1.5f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
             else
                 particlesColor.at(i) = glm::vec4(1.0f,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
+
+            //updatingFlame()
 
         }
 
