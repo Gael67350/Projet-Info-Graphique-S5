@@ -1,10 +1,14 @@
 #version 130
 precision mediump float;
 
-//color information input
-varying vec4 varyColor; //Sometimes we use "out" instead of "varying". "out" should be used in later version of GLSL.
+varying vec2 vary_uv;
+uniform sampler2D uTexture;
+
+varying vec4 varyPosition;
 
 void main()
 {
-    gl_FragColor = varyColor;
+    //definition of the texture mapping
+    vec4 color = texture2D(uTexture,vary_uv);
+    gl_FragColor = vec4(color.a,color.b,color.g,color.r);
 }
