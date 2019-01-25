@@ -71,11 +71,16 @@ int main(int argc, char *argv[])
     glClearColor(1.0, 1.0, 1.0, 1.0); //Full White
 
     glEnable(GL_DEPTH_TEST); //Active the depth test
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //definition of the different shapes used in the fire and definition of the associated VBO
     Cylinder log = Cylinder(50);
     Sphere rock = Sphere(50,50);
     Cube flameParticle = Cube();
+
+    //definition of the buffer to contain the objects data
 
     GLuint fireBuffer;
     glGenBuffers(1,&fireBuffer);
@@ -86,6 +91,8 @@ int main(int argc, char *argv[])
     glBufferData(GL_ARRAY_BUFFER, (3*2 + 2)*sizeof(float) * nbVerticesTot , NULL , GL_DYNAMIC_DRAW );
 
     int currentOffset = 0;
+
+    //insertion of the objects data in the buffer
 
     //insertion of vertices data in the VBO
     glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 3 * sizeof(float)* log.getNbVertices() , log.getVertices());
@@ -116,6 +123,8 @@ int main(int argc, char *argv[])
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     //loading the shaders
+    //two different programs are defined respectively to display colors for the flame
+    //and to display textures on the rocks and logs
 
     FILE* fireVertFileC = fopen("./Shaders/FireShaders/colorized.vert","r");
     FILE* fireFragFileC = fopen("./Shaders/FireShaders/colorized.frag","r");
@@ -124,17 +133,17 @@ int main(int argc, char *argv[])
     FILE* fireFragFileT = fopen("./Shaders/FireShaders/textured.frag","r");
 
     Shader* colorShader = Shader::loadFromFiles(fireVertFileC,fireFragFileC);
-    Shader* texureShader = Shader::loadFromFiles(fireVertFileT,fireFragFileT);
+    Shader* textureShader = Shader::loadFromFiles(fireVertFileT,fireFragFileT);
 
     fclose(fireVertFileC);
     fclose(fireFragFileC);
     fclose(fireVertFileT);
     fclose(fireFragFileT);
 
-    if(colorShader == NULL || texureShader == NULL)
+    if(colorShader == NULL || textureShader == NULL)
         return EXIT_FAILURE;
 
-    //definition of the lateral offset
+    //definition of the lateral offset of the fire particles
     std::vector<std::pair<float,float>> lateralOffset = std::vector<std::pair<float,float>>();
 
     //definition of variables for particles parameters
@@ -153,6 +162,8 @@ int main(int argc, char *argv[])
      float windMaxOffset = 0.03;
      float currentWindOffset = 0.0;
      bool windDirection = true;
+
+     //creation of the particle set composed of two sets of 25 particles in square
 
     //first particle set
 
@@ -226,7 +237,6 @@ int main(int argc, char *argv[])
 
     //addition of the departure point of each particle
 
-
     verticalParticleOffset.push_back(0.7);
     verticalParticleOffset.push_back(0.76);
     verticalParticleOffset.push_back(0.82);
@@ -278,6 +288,7 @@ int main(int argc, char *argv[])
     verticalParticleOffset.push_back(3.64);
     verticalParticleOffset.push_back(3.7);
 
+    //randomisation of the particles order
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 
     std::shuffle(verticalParticleOffset.begin(),verticalParticleOffset.end(),std::default_random_engine(seed));
@@ -338,21 +349,45 @@ int main(int argc, char *argv[])
 
         //Modification and display of the Camp fire in the scene
 
-        glUseProgram(colorShader->getProgramID());
         glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
+
+        //selection of the texture display program
+        glUseProgram(textureShader->getProgramID());
+
+        //definition of a variable to store the current reading offset (reusing the one used before for the insertion)
+        currentOffset = 0;
 
         //definition of the vars passed to the shader
 
-        GLint vPosition = glGetAttribLocation(colorShader->getProgramID(),"vPosition");
-        GLint vNormals = glGetAttribLocation(colorShader->getProgramID(),"vNormals");
-        GLint vUV = glGetAttribLocation(colorShader->getProgramID(),"vUV");
-        GLint uColor = glGetUniformLocation(colorShader->getProgramID(),"uColor");
+        GLint vPosition = glGetAttribLocation(textureShader->getProgramID(),"vPosition");
+        GLint vNormals = glGetAttribLocation(textureShader->getProgramID(), "vNormals");
+        GLint vUV = glGetAttribLocation(textureShader->getProgramID(), "vUV");
+        GLint uColor = glGetUniformLocation(textureShader->getProgramID(), "uColor");
+        GLint uMVP = glGetUniformLocation(textureShader->getProgramID(), "uMvp");
+
+
+        //selection of datas in the VBOS
+
+        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(0));
+        glEnableVertexAttribArray(vPosition);
+
+        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+
+        glVertexAttribPointer(vNormals, 3, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
+        glEnableVertexAttribArray(vNormals);
+
+        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+
+        glVertexAttribPointer(vUV, 2, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
+        glEnableVertexAttribArray(vUV);
+
+        currentOffset += 2 * sizeof(float)* nbVerticesTot;
 
         //definition of the global modification matrix used
 
         //definition of the projection matrix same for all painted elements
 
-        glm::vec3 cameraPos(-10.f,10.f, 0);
+        glm::vec3 cameraPos(-10.f, 10.f, 0);
         glm::vec3 cameraTarget(0, 0, 0);
         glm::vec3 cameraUp(1.f, 1.f, 0.f);
 
@@ -362,35 +397,14 @@ int main(int argc, char *argv[])
         //inputing the mvp matrix into the shader
         glm::mat4 mvp = proj*view;
 
-        GLint uMVP = glGetUniformLocation(colorShader->getProgramID(), "uMvp");
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
 
         //shape transformation matrix to move the different objects
 
         glm::mat4 shapeTransformationMatrix(1.0f);
 
-        //definition of a variable to store the current reading offset (reusing the one used before for the insertion)
-        currentOffset = 0;
-
 
         //logs display
-        //selection of datas in the VBOS
-
-
-        glVertexAttribPointer(vPosition,3,GL_FLOAT,GL_FALSE,0,INDICE_TO_PTR(0));
-        glEnableVertexAttribArray(vPosition);
-
-        currentOffset += 3 * sizeof(float)* nbVerticesTot;
-
-        glVertexAttribPointer(vNormals,3,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR((void*)(currentOffset)));
-        glEnableVertexAttribArray(vNormals);
-
-        currentOffset += 3 * sizeof(float)* nbVerticesTot;
-
-        glVertexAttribPointer(vUV,2,GL_FALSE,GL_FLOAT,0,INDICE_TO_PTR((void*)(currentOffset)));
-        glEnableVertexAttribArray(vUV);
-
-        currentOffset += 2 * sizeof(float)* nbVerticesTot;
 
         //color affectation :
 
@@ -457,6 +471,42 @@ int main(int argc, char *argv[])
         }
 
         //end of the rock drawing section
+
+        //changing used program to the color display for flame
+        glUseProgram(colorShader->getProgramID());
+
+        //definition of a variable to store the current reading offset (reusing the one used before for the insertion)
+        currentOffset = 0;
+
+        //redefinition of the vars passed to the shader
+        //to bind it on the right program
+
+        vPosition = glGetAttribLocation(colorShader->getProgramID(), "vPosition");
+        vNormals = glGetAttribLocation(colorShader->getProgramID(), "vNormals");
+        vUV = glGetAttribLocation(colorShader->getProgramID(), "vUV");
+        uColor = glGetUniformLocation(colorShader->getProgramID(), "uColor");
+        uMVP = glGetUniformLocation(colorShader->getProgramID(), "uMvp");
+
+        //reafectation of the projection matrix
+
+        glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
+
+        //selection of datas in the VBOS
+
+        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(0));
+        glEnableVertexAttribArray(vPosition);
+
+        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+
+        glVertexAttribPointer(vNormals, 3, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
+        glEnableVertexAttribArray(vNormals);
+
+        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+
+        glVertexAttribPointer(vUV, 2, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
+        glEnableVertexAttribArray(vUV);
+
+        currentOffset += 2 * sizeof(float)* nbVerticesTot;
 
         //begin of the flame drawing section
 
@@ -525,13 +575,21 @@ int main(int argc, char *argv[])
 
             //updating color
             if(verticalParticleOffset.at(i) < 0.8)
-                particlesColor.at(i) = glm::vec4(0.f,0.f,1.f,0.1f);
+                particlesColor.at(i) = glm::vec4(0.f,0.f,1.f,0.65f);
             else if(((verticalParticleOffset.at(i)/2)-1.5)>0)
-                particlesColor.at(i) = glm::vec4((3.5f - (verticalParticleOffset.at(i)/2)-1.5f) ,1.5f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
+                particlesColor.at(i) = glm::vec4((3.5f - (verticalParticleOffset.at(i)/2)-1.5f) ,1.5f-(verticalParticleOffset.at(i)/2),0.f,0.65f);
             else
-                particlesColor.at(i) = glm::vec4(1.0f,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.1f);
+                particlesColor.at(i) = glm::vec4(1.0f,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.65f);
 
-            //updatingFlame()
+            //updatingFlameSize
+            if (verticalParticleOffset.at(i) < 3.1)
+            {
+              particleSize.at(i) = 0.3;
+            }
+            else
+            {
+              particleSize.at(i) -= 0.01;
+            }
 
         }
 
