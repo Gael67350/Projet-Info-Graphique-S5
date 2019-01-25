@@ -12,11 +12,11 @@ attribute vec3 vNormals;
 attribute vec2 vUV;
 
 //Color information for fragment shader
-uniform vec3 uColor;
+uniform vec4 uColor;
 varying vec4 varyColor; 
 
 void main()
 {
     gl_Position = uMvp*uTransfo*vec4(vPosition, 1.0); 
-    varyColor = vec4(uColor, 1.0);
+    varyColor = uColor;
 }
