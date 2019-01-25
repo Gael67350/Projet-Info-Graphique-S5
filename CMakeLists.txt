@@ -124,7 +124,8 @@ if(MINGW)
     target_link_libraries(Graphics_Squelette PUBLIC
         -lOpenGL32
         -lglew32
-        -lSDL2)
+        -lSDL2
+        -lSDL2_image)
 
     #Scripts to copy to bin/
     file(GLOB BINRESOURCES ${CMAKE_SOURCE_DIR}/libs/VS/x86/*.dll ${CMAKE_SOURCE_DIR}/libs/VS/x86/*.lib)
@@ -159,7 +160,8 @@ elseif(MSVC)
         "OpenGL32.lib"
         "glew32.lib"
         "SDL2.lib"
-        "SDL2main.lib")
+        "SDL2main.lib"
+        "SDL2_image.lib")
 
     #Scripts to copy to bin/
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -194,15 +196,20 @@ else()
         -I${GL_INCLUDE_PATH})
 
     target_link_libraries(Graphics_Squelette PUBLIC
+        -L${SDL2_LIBRARY_PATH}
+        -L${SDL2_IMAGE_LIBRARY_PATH}
+        -L${GLEW_LIBRARY_PATH}
+        -L${GL_LIBRARY_PATH}
         -lGL
         -lGLEW
-        -lSDL2)
+        -lSDL2
+        -lSDL2_image)
 endif()
 
 
 #Scripts to copy to bin/
 file(GLOB SHADERRESOURCES
-    Shaders/*)
+    Shaders/color*)
 foreach(srcfile ${SHADERRESOURCES})
     get_filename_component(dirname  "${srcfile}" DIRECTORY)
     get_filename_component(filename "${srcfile}" NAME)
@@ -241,6 +248,28 @@ foreach(srcfile ${SHADERRESOURCES})
             VERBATIM
     )
 endforeach(srcfile)
+
+#copy of the project texture ressources to the bin path
+file(GLOB SHADERRESOURCES
+        Ressources/*)
+foreach(srcfile ${SHADERRESOURCES})
+    get_filename_component(dirname  "${srcfile}" DIRECTORY)
+    get_filename_component(filename "${srcfile}" NAME)
+    file(RELATIVE_PATH relpath "${CMAKE_CURRENT_SOURCE_DIR}" "${srcfile}")
+    file(RELATIVE_PATH dirrelpath "${CMAKE_CURRENT_SOURCE_DIR}" "${dirname}")
+
+    set(ShadersOutput ${ShadersOutput} "${relpath}")
+
+    add_custom_command(
+            OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${relpath}"
+            DEPENDS ${relpath}
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}"
+            COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${relpath}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}/${filename}"
+            COMMENT "Generating ${relpath}"
+            VERBATIM
+    )
+endforeach(srcfile)
+
 
 add_custom_target(ShaderTarget DEPENDS ${ShadersOutput})
 add_dependencies(Graphics_Squelette ShaderTarget)
