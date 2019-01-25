@@ -1,4 +1,4 @@
-#include "FireTree.h"
+#include "FirTree.h"
 
 #include <cmath>
 #include <algorithm>
@@ -14,7 +14,7 @@
 #include <Cylinder.h>
 #include <Cone.h>
 
-FireTree::FireTree(uint32_t nbLatitude) {
+FirTree::FirTree(uint32_t nbLatitude) {
 	Cylinder trunk = Cylinder(nbLatitude);
 	Cone leaves = Cone(nbLatitude, 0);
 
@@ -56,7 +56,7 @@ FireTree::FireTree(uint32_t nbLatitude) {
 	}
 }
 
-bool FireTree::draw(Shader* shader, Camera &camera, glm::vec3 const &position, float const &scaling) const {
+bool FirTree::draw(Shader* shader, Camera &camera, glm::vec3 const &position, float const &scaling) const {
 	float angleRad = 90 * (M_PI / 180.f);
 
 	glm::mat4 id(1.f);

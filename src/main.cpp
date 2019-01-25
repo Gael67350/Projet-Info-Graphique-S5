@@ -17,7 +17,7 @@
 
 // Geometry
 #include <Geometry.h>
-#include <FireTree.h>
+#include <FirTree.h>
 
 // Camera
 #include <Camera.h>
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     //From here you can load your OpenGL objects, like VBO, Shaders, etc.
 
 	// Create FireTree
-	FireTree fireTree = FireTree(500);
+	FirTree firTree = FirTree(500);
 
     // Put all fire tree parts in the VBO
     GLuint buffer;
@@ -83,9 +83,9 @@ int main(int argc, char *argv[]) {
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
-    glBufferData(GL_ARRAY_BUFFER, (3 + 3) * sizeof(float) * fireTree.getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * fireTree.getNbVertices(), fireTree.getVertices());
-	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * fireTree.getNbVertices(), 3 * sizeof(float) * fireTree.getNbVertices(), fireTree.getColors());
+    glBufferData(GL_ARRAY_BUFFER, (3 + 3) * sizeof(float) * firTree.getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * firTree.getNbVertices(), firTree.getVertices());
+	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * firTree.getNbVertices(), 3 * sizeof(float) * firTree.getNbVertices(), firTree.getColors());
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -151,11 +151,11 @@ int main(int argc, char *argv[]) {
         glEnableVertexAttribArray(vPosition);
 
 		GLint vColor = glGetAttribLocation(shader->getProgramID(), "vColor");
-		glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(3 * sizeof(float) * fireTree.getNbVertices()));
+		glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(3 * sizeof(float) * firTree.getNbVertices()));
 		glEnableVertexAttribArray(vColor);
 
         // Draw fire tree
-		fireTree.draw(shader, camera);
+		firTree.draw(shader, camera, glm::vec3(0,0,0), 0.25f);
 
         //Display on screen (swap the buffer on screen and the buffer you are drawing on)
         SDL_GL_SwapWindow(window);

@@ -1,14 +1,14 @@
-#ifndef  FIRE_TREE_INC
-#define  FIRE_TREE_INC
+#ifndef  FIR_TREE_INC
+#define  FIR_TREE_INC
 
 #include <vector>
 #include <glm/glm.hpp>
 #include <Shader.h>
 #include <Camera.h>
 
-class FireTree {
+class FirTree {
 public:
-	FireTree(uint32_t nbLatitude = 50);
+	FirTree(uint32_t nbLatitude = 50);
 
 	bool draw(Shader* shader, Camera &camera, glm::vec3 const &position = {0,0,0}, float const &scaling = 1.f) const;
 
