@@ -74,10 +74,10 @@ int main(int argc, char *argv[]) {
     //TODO
     //From here you can load your OpenGL objects, like VBO, Shaders, etc.
 
-	// Create FireTree
+	// Create FirTree
 	FirTree firTree = FirTree(500);
 
-    // Put all fire tree parts in the VBO
+    // Put all fir tree parts in the VBO
     GLuint buffer;
     glGenBuffers(1, &buffer);
 
@@ -97,8 +97,8 @@ int main(int argc, char *argv[]) {
     FILE *vertFile;
     FILE *fragFile;
 
-    vertFile = fopen("Shaders/color.vert", "r");
-    fragFile = fopen("Shaders/color.frag", "r");
+    vertFile = fopen("Shaders/TreeShaders/colorized.vert", "r");
+    fragFile = fopen("Shaders/TreeShaders/colorized.frag", "r");
 
     Shader *shader = Shader::loadFromFiles(vertFile, fragFile);
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 		glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(3 * sizeof(float) * firTree.getNbVertices()));
 		glEnableVertexAttribArray(vColor);
 
-        // Draw fire tree
+        // Draw fir tree
 		firTree.draw(shader, camera, glm::vec3(0,0,0), 0.25f);
 
         //Display on screen (swap the buffer on screen and the buffer you are drawing on)

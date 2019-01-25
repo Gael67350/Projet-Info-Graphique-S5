@@ -5,7 +5,6 @@ varying vec4 varyColor; //Sometimes we use "out" instead of "varying". "out" sho
 
 //We still use varying because OpenGLES 2.0 (OpenGL Embedded System, for example for smartphones) does not accept "in" and "out"
 
-void main()
-{
+void main() {
     gl_FragColor = varyColor;
 }

@@ -73,7 +73,7 @@ bool FirTree::draw(Shader* shader, Camera &camera, glm::vec3 const &position, fl
 	glm::mat4 leavesBaseRangeModel = glm::translate(leavesScaling, glm::vec3(0, 0, 0.2f));
 	glm::mat4 leavesUpRangeModel = glm::translate(id, glm::vec3(0, 0, 0.33f)) * glm::scale(id, glm::vec3(0.89f, 1.f, 0.89f));
 
-	// Build fire tree scene graph
+	// Build fir tree scene graph
 	std::stack<glm::mat4> matrices;
 	matrices.push(camera.lookAt());
 
