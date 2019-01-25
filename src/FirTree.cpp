@@ -65,7 +65,7 @@ bool FirTree::draw(Shader* shader, Camera &camera, glm::vec3 const &position, fl
 	glm::mat4 trunkRotation = glm::rotate(id, -angleRad, glm::vec3(1.f, 0, 0));
 	//glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(0.75f, 0.75f, 4.f));
 	glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(scaling * 0.75f, scaling * 0.75f, scaling * 4.f));
-	glm::mat4 trunkModel = glm::translate(trunkScaling, glm::vec3(-position.x, -position.y, -position.z));
+	glm::mat4 trunkModel = glm::translate(trunkScaling, glm::vec3(-position.x, -position.z, position.y));
 
 	// Leaves transformations
 	glm::mat4 leavesScaling = glm::scale(id, glm::vec3(3.75f, 3.75f, 0.75f));
@@ -80,33 +80,32 @@ bool FirTree::draw(Shader* shader, Camera &camera, glm::vec3 const &position, fl
 	matrices.push(matrices.top() * trunkModel);
 
 	// Draw trunk
-	GLint uMVP;
-
-	uMVP = glGetUniformLocation(shader->getProgramID(), "uMVP");
+	GLint uMVP = glGetUniformLocation(shader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, getNbTrunkVertices());
 
 	matrices.push(matrices.top() * leavesBaseRangeModel);
 
 	// Draw 1st range of leaves
-	uMVP = glGetUniformLocation(shader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
 	glDrawArrays(GL_TRIANGLE_STRIP, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 2nd range of leaves
-	uMVP = glGetUniformLocation(shader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
 	glDrawArrays(GL_TRIANGLE_STRIP, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 3rd range of leaves
-	uMVP = glGetUniformLocation(shader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
 	glDrawArrays(GL_TRIANGLE_STRIP, getNbTrunkVertices(), getNbLeavesVertices());
 
+	matrices.pop();
+	matrices.pop();
+	matrices.pop();
+	matrices.pop();
 	matrices.pop();
 
 	if (!matrices.empty()) {
