@@ -87,9 +87,9 @@ int main(int argc, char *argv[])
     glGenBuffers(1,&fireBuffer);
     glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
 
-    int nbVerticesTot = rock.getNbVertices() + flameParticle.getNbVertices() + log.getNbVertices();
+    uint32_t nbVerticesTot = rock.getNbVertices() + flameParticle.getNbVertices() + log.getNbVertices();
 
-    glBufferData(GL_ARRAY_BUFFER, (3*2 + 2)*sizeof(float) * nbVerticesTot , NULL , GL_DYNAMIC_DRAW );
+    glBufferData(GL_ARRAY_BUFFER, ((3*2) + 2)*sizeof(float) * nbVerticesTot , NULL , GL_DYNAMIC_DRAW );
 
     int currentOffset = 0;
 
@@ -120,8 +120,60 @@ int main(int argc, char *argv[])
     currentOffset += 2 * sizeof(float)* rock.getNbVertices();
     glBufferSubData(GL_ARRAY_BUFFER, currentOffset , 2 * sizeof(float)* flameParticle.getNbVertices() , flameParticle.getUVs());
 
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //loading the texture images related with the fire model
+    if (!(IMG_Init(IMG_INIT_JPG)&IMG_INIT_JPG))
+    {
+        ERROR("could not load SDL2_image with JPG files \n");
+        return EXIT_FAILURE;
+    }
+
+    SDL_Surface* imgLog = IMG_Load("Ressources/log.jpg");
+    SDL_Surface* imgRock = IMG_Load("Ressources/rock.jpg");
+
+    SDL_Surface* logRGB = SDL_ConvertSurfaceFormat(imgLog, SDL_PIXELFORMAT_RGBA8888, 0);
+    SDL_Surface* rockRGB = SDL_ConvertSurfaceFormat(imgRock, SDL_PIXELFORMAT_RGBA8888, 0);
+
+    SDL_FreeSurface(imgLog);
+    SDL_FreeSurface(imgRock);
+
+    //log texture definition
+    GLuint logTexture;
+    glGenTextures(1, &logTexture);
+    glBindTexture(GL_TEXTURE_2D, logTexture);
+
+    //loading textures
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, logRGB->w, logRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)logRGB->pixels);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
+
+    //log texture definition
+    GLuint rockTexture;
+
+    glGenTextures(1, &rockTexture);
+    glBindTexture(GL_TEXTURE_2D, rockTexture);
+
+    //loading textures
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rockRGB->w, rockRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)rockRGB->pixels);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
 
     //loading the shaders
     //two different programs are defined respectively to display colors for the flame
@@ -143,44 +195,6 @@ int main(int argc, char *argv[])
 
     if(colorShader == NULL || textureShader == NULL)
         return EXIT_FAILURE;
-
-    //loading the texture images related with the fire model
-    if (!(IMG_Init(IMG_INIT_JPG)&IMG_INIT_JPG))
-    {
-      ERROR("could not load SDL2_image with JPG files \n");
-      return EXIT_FAILURE;
-    }
-
-    SDL_Surface* imgLog = IMG_Load("Ressources/log.jpg");
-    SDL_Surface* imgRock = IMG_Load("Ressources/rock.jpg");
-
-    SDL_Surface* logRGB = SDL_ConvertSurfaceFormat(imgLog, SDL_PIXELFORMAT_RGBA8888, 0);
-    SDL_Surface* rockRGB = SDL_ConvertSurfaceFormat(imgRock, SDL_PIXELFORMAT_RGBA8888, 0);
-
-    SDL_FreeSurface(imgLog);
-    SDL_FreeSurface(imgRock);
-
-    //texture definition
-    GLuint textureArray;
-
-    glGenTextures(2, &textureArray);
-    glBindTexture(GL_TEXTURE_2D, textureArray);
-
-    //loading textures
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, logRGB->w, logRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)logRGB->pixels);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rockRGB->w, rockRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)rockRGB->pixels);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 1);
-
 
     //definition of the lateral offset of the fire particles
     std::vector<std::pair<float,float>> lateralOffset = std::vector<std::pair<float,float>>();
@@ -388,46 +402,42 @@ int main(int argc, char *argv[])
 
         //Modification and display of the Camp fire in the scene
 
-        glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
-
         //selection of the texture display program
         glUseProgram(textureShader->getProgramID());
+        glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
 
         //definition of a variable to store the current reading offset (reusing the one used before for the insertion)
         currentOffset = 0;
 
         //definition of the vars passed to the shader
-
+        GLint uMVP = glGetUniformLocation(textureShader->getProgramID(), "uMvp");
+        GLint uTexture = glGetAttribLocation(textureShader->getProgramID(), "uTexture");
         GLint vPosition = glGetAttribLocation(textureShader->getProgramID(),"vPosition");
         GLint vNormals = glGetAttribLocation(textureShader->getProgramID(), "vNormals");
         GLint vUV = glGetAttribLocation(textureShader->getProgramID(), "vUV");
-        GLint uColor = glGetUniformLocation(textureShader->getProgramID(), "uColor");
-        GLint uMVP = glGetUniformLocation(textureShader->getProgramID(), "uMvp");
-        GLuint uTexture = glGetAttribLocation(textureShader->getProgramID(), "uTexture");
-
 
         //selection of datas in the VBOS
-
-        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(0));
+        //vertexes
+        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
         glEnableVertexAttribArray(vPosition);
 
-        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+        currentOffset += 3 * sizeof(float) * nbVerticesTot;
 
-        glVertexAttribPointer(vNormals, 3, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
+        //normals
+        glVertexAttribPointer(vNormals, 3,GL_FLOAT , GL_FALSE, 0,INDICE_TO_PTR(currentOffset));
         glEnableVertexAttribArray(vNormals);
 
-        currentOffset += 3 * sizeof(float)* nbVerticesTot;
+        currentOffset += 3 * sizeof(float) * nbVerticesTot;
 
-        glVertexAttribPointer(vUV, 2, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
+        //uvDatas
+        glVertexAttribPointer(vUV, 2, GL_FLOAT , GL_FALSE , 0, INDICE_TO_PTR(currentOffset));
         glEnableVertexAttribArray(vUV);
-
-        currentOffset += 2 * sizeof(float)* nbVerticesTot;
 
         //definition of the global modification matrix used
 
         //definition of the projection matrix same for all painted elements
 
-        glm::vec3 cameraPos(-10.f, 10.f, 0);
+        glm::vec3 cameraPos(-2.f, 2.f, 0);
         glm::vec3 cameraTarget(0, 0, 0);
         glm::vec3 cameraUp(1.f, 1.f, 0.f);
 
@@ -449,7 +459,7 @@ int main(int argc, char *argv[])
         //texture affectation
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureArray);
+        glBindTexture(GL_TEXTURE_2D, logTexture);
         glUniform1i(uTexture, 0);
 
         //modification of the transformation matrix to place the logs
@@ -484,10 +494,8 @@ int main(int argc, char *argv[])
         //begin of the rocks drawing section
 
         //texture affectation for the rock
-
-        //texture affectation
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textureArray);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, rockTexture);
         glUniform1i(uTexture, 0);
 
         //modification of the transformation matrix to place the rocks
@@ -526,29 +534,31 @@ int main(int argc, char *argv[])
         vPosition = glGetAttribLocation(colorShader->getProgramID(), "vPosition");
         vNormals = glGetAttribLocation(colorShader->getProgramID(), "vNormals");
         vUV = glGetAttribLocation(colorShader->getProgramID(), "vUV");
-        uColor = glGetUniformLocation(colorShader->getProgramID(), "uColor");
         uMVP = glGetUniformLocation(colorShader->getProgramID(), "uMvp");
+
+        //re-selection of datas in the VBOS
+        //vertexes
+        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
+        glEnableVertexAttribArray(vPosition);
+
+        currentOffset += 3 * sizeof(float) * nbVerticesTot;
+
+        //normals
+        glVertexAttribPointer(vNormals, 3,GL_FLOAT , GL_FALSE, 0,INDICE_TO_PTR(currentOffset));
+        glEnableVertexAttribArray(vNormals);
+
+        currentOffset += 3 * sizeof(float) * nbVerticesTot;
+
+        //uvDatas
+        glVertexAttribPointer(vUV, 2, GL_FLOAT , GL_FALSE , 0, INDICE_TO_PTR(currentOffset));
+        glEnableVertexAttribArray(vUV);
+
+        //definition of new parameter which were not in the texture shader
+        GLint uColor = glGetUniformLocation(colorShader->getProgramID(), "uColor");
 
         //reafectation of the projection matrix
 
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
-
-        //selection of datas in the VBOS
-
-        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(0));
-        glEnableVertexAttribArray(vPosition);
-
-        currentOffset += 3 * sizeof(float)* nbVerticesTot;
-
-        glVertexAttribPointer(vNormals, 3, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
-        glEnableVertexAttribArray(vNormals);
-
-        currentOffset += 3 * sizeof(float)* nbVerticesTot;
-
-        glVertexAttribPointer(vUV, 2, GL_FALSE, GL_FLOAT, 0, INDICE_TO_PTR((void*)(currentOffset)));
-        glEnableVertexAttribArray(vUV);
-
-        currentOffset += 2 * sizeof(float)* nbVerticesTot;
 
         //begin of the flame drawing section
 
