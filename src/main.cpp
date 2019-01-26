@@ -200,6 +200,8 @@ int main(int argc, char *argv[])
     std::vector<std::pair<float,float>> lateralOffset = std::vector<std::pair<float,float>>();
 
     //definition of variables for particles parameters
+    float beginPoint = 0.9;
+    float endPoint = 3.9;
     float bigDistance = 0.2;
     float smallDistance = 0.4;
 
@@ -437,7 +439,7 @@ int main(int argc, char *argv[])
 
         //definition of the projection matrix same for all painted elements
 
-        glm::vec3 cameraPos(-2.f, 2.f, 0);
+        glm::vec3 cameraPos(-3.5f, 3.5f, 0);
         glm::vec3 cameraTarget(0, 0, 0);
         glm::vec3 cameraUp(1.f, 1.f, 0.f);
 
@@ -464,8 +466,8 @@ int main(int argc, char *argv[])
 
         //modification of the transformation matrix to place the logs
         shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,3.14f/8.f,glm::vec3(1.f,0.f,0.f));
-        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.0f,0.75f,0.0f));
-        shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.3f,0.3f,1.5f));
+        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.0f,0.9f,0.0f));
+        shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.4f,0.4f,1.9f));
 
         //log drawing loop
 
@@ -499,8 +501,8 @@ int main(int argc, char *argv[])
         glUniform1i(uTexture, 0);
 
         //modification of the transformation matrix to place the rocks
-        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(-1.17f,0.45f,0.f));
-        shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.4f,0.4f,0.4f));
+        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(-1.5f,0.6f,0.f));
+        shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(0.53f,0.53f,0.53f));
 
         //rocks drawing loop and reset of the pre rotation matrix
         preRotation = glm::mat4(1.f);
@@ -610,31 +612,30 @@ int main(int argc, char *argv[])
         for(int i = 0 ; i<verticalParticleOffset.size() ; i++)
         {
             //updating position
-
-            if(verticalParticleOffset.at(i) <= 3.7)
+            if(verticalParticleOffset.at(i) <= endPoint)
                 verticalParticleOffset.at(i) += 0.06;
             else
-                verticalParticleOffset.at(i) = 0.7;
+                verticalParticleOffset.at(i) = beginPoint;
 
             //wind application to the flame
-            if(verticalParticleOffset.at(i) > 0.7)
-                windOffset.at(i) += currentWindOffset*(verticalParticleOffset.at(i)/3.7);
+            if(verticalParticleOffset.at(i) > beginPoint)
+                windOffset.at(i) += currentWindOffset*(verticalParticleOffset.at(i)/endPoint);
             else
                 windOffset.at(i) = 0.0;
 
             //updating rotation
-            rotationOffset.at(i) =  2*(verticalParticleOffset.at(i)-0.7);
+            rotationOffset.at(i) =  2*(verticalParticleOffset.at(i)-beginPoint);
 
             //updating color
-            if(verticalParticleOffset.at(i) < 0.8)
+            if(verticalParticleOffset.at(i) < beginPoint+0.1)
                 particlesColor.at(i) = glm::vec4(0.f,0.f,1.f,0.65f);
-            else if(((verticalParticleOffset.at(i)/2)-1.5)>0)
-                particlesColor.at(i) = glm::vec4((3.5f - (verticalParticleOffset.at(i)/2)-1.5f) ,1.5f-(verticalParticleOffset.at(i)/2),0.f,0.65f);
+            else if(verticalParticleOffset.at(i) < endPoint/1.3)
+                particlesColor.at(i) = glm::vec4(1.f,1.f-(verticalParticleOffset.at(i)/(endPoint/1.3)),0.f,0.65f);
             else
-                particlesColor.at(i) = glm::vec4(1.0f,1.1f-(verticalParticleOffset.at(i)/2),0.f,0.65f);
+                particlesColor.at(i) = glm::vec4( (1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-0.9f)) ? (1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-0.9f)) : 0.0f ,0.0f,0.f,0.65f);
 
             //updatingFlameSize
-            if (verticalParticleOffset.at(i) < 3.1)
+            if (verticalParticleOffset.at(i) < endPoint-0.8)
             {
               particleSize.at(i) = 0.3;
             }
