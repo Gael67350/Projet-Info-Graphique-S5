@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <glm/glm.hpp>
+#include <SDL2/SDL_image.h>
 #include <Shader.h>
 #include <Camera.h>
 
@@ -10,7 +11,13 @@ class FirTree {
 public:
 	FirTree(uint32_t nbLatitude = 50);
 
-	bool draw(Shader* shader, Camera &camera, glm::vec3 const &position = {0,0,0}, float const &scaling = 1.f) const;
+	~FirTree();
+
+	bool loadShaders();
+
+	void loadTextures();
+
+	bool draw(Camera &camera, glm::vec3 const &position = { 0,0,0 }, float const &scaling = 1.f);
 
 	const float* getVertices() const { return &m_vertices[0]; }
 
@@ -27,6 +34,10 @@ public:
 	uint32_t getNbLeavesVertices() const { return m_nbLeavesVertices; }
 
 private:
+	static bool isInit;
+
+	void initShadersData();
+
 	uint32_t m_nbVertices = 0;
 	uint32_t m_nbTrunkVertices = 0;
 	uint32_t m_nbLeavesVertices = 0;
@@ -35,6 +46,12 @@ private:
 	std::vector<float> m_normals;
 	std::vector<float> m_colors;
 	std::vector<float> m_uvs;
+
+	GLuint m_buffer;
+
+	std::vector<Shader*> m_shaders;
+	std::vector<SDL_Surface*> m_textures;
+	std::vector<GLuint> m_texturesIDs;
 };
 
 #endif

@@ -1,6 +1,7 @@
 //SDL Libraries
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_image.h>
 
 //OpenGL Libraries
 #include <GL/glew.h>
@@ -46,6 +47,12 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	//Initialize the IMG component
+	if (!(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)) {
+		ERROR("Could not load SDL2_image with JPG files\n");
+		return EXIT_FAILURE;
+	}
+
 	//Create a Window
 	SDL_Window *window = SDL_CreateWindow("VR Camera",                           //Titre
 		SDL_WINDOWPOS_UNDEFINED,               //X Position
@@ -81,27 +88,15 @@ int main(int argc, char *argv[]) {
 	// Create FirTree
 	FirTree firTree = FirTree(500);
 
-	// Put all fir tree parts in the VBO
-	GLuint firTreeBuffer;
-	glGenBuffers(1, &firTreeBuffer);
-
-	glBindBuffer(GL_ARRAY_BUFFER, firTreeBuffer);
-
-	glBufferData(GL_ARRAY_BUFFER, (3 + 3) * sizeof(float) * firTree.getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * firTree.getNbVertices(), firTree.getVertices());
-	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * firTree.getNbVertices(), 3 * sizeof(float) * firTree.getNbVertices(), firTree.getColors());
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	// View from world space to camera space
 	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
-	camera.setPosition(glm::vec3(10.f, 10.f, -10.f));
+	camera.setPosition(glm::vec3(0, 4.f, -10.f));
 
 	// Generate trees coordinates
-	size_t nbFirTrees = 15;
+	size_t nbFirTrees = 200;
 	size_t nbDrawnTrees = 0;
 
-	float maxRadius = 18, minRadius = 6, nbSlice = 3;
+	float maxRadius = 42, minRadius = 10, nbSlice = 10;
 
 	std::vector<glm::vec3> treesCoordinates;
 
@@ -130,23 +125,13 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	// Load textures
+	firTree.loadTextures();
+
 	// Load Shaders
-	FILE *firTreeVertFile;
-	FILE *fireTreeFragFile;
-
-	firTreeVertFile = fopen("Shaders/TreeShaders/colorized.vert", "r");
-	fireTreeFragFile = fopen("Shaders/TreeShaders/colorized.frag", "r");
-
-	Shader *firTreeShader = Shader::loadFromFiles(firTreeVertFile, fireTreeFragFile);
-
-	fclose(firTreeVertFile);
-	fclose(fireTreeFragFile);
-
-	if (firTreeShader == NULL) {
+	if (!firTree.loadShaders()) {
 		return EXIT_FAILURE;
 	}
-
-	glUseProgram(firTreeShader->getProgramID());
 
 	bool isOpened = true;
 
@@ -175,20 +160,9 @@ int main(int argc, char *argv[]) {
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		//TODO rendering
-		glBindBuffer(GL_ARRAY_BUFFER, firTreeBuffer);
-
-		GLint vPosition = glGetAttribLocation(firTreeShader->getProgramID(), "vPosition");
-		glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(0));
-		glEnableVertexAttribArray(vPosition);
-
-		GLint vColor = glGetAttribLocation(firTreeShader->getProgramID(), "vColor");
-		glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(3 * sizeof(float) * firTree.getNbVertices()));
-		glEnableVertexAttribArray(vColor);
-
 		// Draw forest
 		for (glm::vec3 const &coord : treesCoordinates) {
-			firTree.draw(firTreeShader, camera, glm::vec3(coord.x, coord.y, coord.z), 1.f);
+			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 1.f);
 		}
 
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
@@ -204,8 +178,6 @@ int main(int argc, char *argv[]) {
 
 	//Free
 	glUseProgram(0);
-	delete firTreeShader;
-	glDeleteBuffers(1, &firTreeBuffer);
 
 	//Free everything
 	if (context != NULL)
