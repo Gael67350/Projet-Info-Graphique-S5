@@ -159,7 +159,8 @@ elseif(MSVC)
         "OpenGL32.lib"
         "glew32.lib"
         "SDL2.lib"
-        "SDL2main.lib")
+        "SDL2main.lib"
+		"SDL2_image.lib")
 
     #Scripts to copy to bin/
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -201,7 +202,30 @@ endif()
 
 
 #Scripts to copy to bin/
-file(GLOB SHADERRESOURCES
+file(GLOB_RECURSE TEXTURERESOURCES
+    Ressources/*)
+foreach(srcfile ${TEXTURERESOURCES})
+    get_filename_component(dirname  "${srcfile}" DIRECTORY)
+    get_filename_component(filename "${srcfile}" NAME)
+    file(RELATIVE_PATH relpath "${CMAKE_CURRENT_SOURCE_DIR}" "${srcfile}")
+    file(RELATIVE_PATH dirrelpath "${CMAKE_CURRENT_SOURCE_DIR}" "${dirname}")
+
+    set(TextureOutput ${TextureOutput} "${relpath}")
+
+    add_custom_command(
+        OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${relpath}"
+        DEPENDS ${relpath}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${relpath}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}/${filename}"
+        COMMENT "Generating ${relpath}"
+        VERBATIM
+        )
+endforeach(srcfile)
+
+add_custom_target(TextureTarget DEPENDS ${TextureOutput})
+add_dependencies(Graphics_Squelette TextureTarget)
+
+file(GLOB_RECURSE SHADERRESOURCES
     Shaders/*)
 foreach(srcfile ${SHADERRESOURCES})
     get_filename_component(dirname  "${srcfile}" DIRECTORY)

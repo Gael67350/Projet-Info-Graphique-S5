@@ -8,7 +8,7 @@ class Cone : public Geometry
 {
     public:
         /* \brief Constructor. Base radius = 1.0. Depth = 1.0. */
-        Cone(uint32_t nbLattitude, float radiusTop);
+        Cone(uint32_t nbLattitude = 50, float radiusTop = 1.f);
 };
 
 #endif
