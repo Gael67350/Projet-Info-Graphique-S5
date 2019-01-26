@@ -40,7 +40,7 @@ FirTree::FirTree(uint32_t nbLatitude) {
 	std::copy(leaves.getUVs(), leaves.getUVs() + (2 * leaves.getNbVertices()), m_uvs.begin() + (2 * trunk.getNbVertices()));
 
 	// Fill colors
-	glm::vec3 trunkColor(0.486f, 0.329f, .016f);	// Brown
+	glm::vec3 trunkColor(0.875f, 0.592f, .027f);	// Brown
 	glm::vec3 leavesColor(0.078f, 0.353f, 0.196f);	// Dark green
 
 	for (uint32_t i = 0; i < (3 * m_nbTrunkVertices); i += 3) {
@@ -245,6 +245,10 @@ void FirTree::initShadersData() {
 	vPosition = glGetAttribLocation(colorizedShader->getProgramID(), "vPosition");
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
 	glEnableVertexAttribArray(vPosition);
+
+	vColor = glGetAttribLocation(colorizedShader->getProgramID(), "vColor");
+	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, (void*)(3 * sizeof(float) * getNbVertices()));
+	glEnableVertexAttribArray(vColor);
 
 	glUseProgram(0);
 
