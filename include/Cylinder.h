@@ -10,7 +10,7 @@ class Cylinder : public Geometry
     public:
         /* \brief Constructor
          * \param nbLattitude the number of lattitude. Minimum : 3 */
-        Cylinder(uint32_t nbLattitude);
+        Cylinder(uint32_t nbLattitude = 50);
 };
 
 #endif
