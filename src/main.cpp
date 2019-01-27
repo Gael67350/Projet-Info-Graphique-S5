@@ -1,6 +1,6 @@
 //SDL Libraries
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
+//#include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
 
 //OpenGL Libraries
@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
+
 	//Create a Window
 	SDL_Window *window = SDL_CreateWindow("VR Camera",                           //Titre
 		SDL_WINDOWPOS_UNDEFINED,               //X Position
@@ -79,6 +80,11 @@ int main(int argc, char *argv[]) {
 	glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
 
 	glEnable(GL_DEPTH_TEST); //Active the depth test
+
+	//enableing transparency
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//TODO
 	//From here you can load your OpenGL objects, like VBO, Shaders, etc.

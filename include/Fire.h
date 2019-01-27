@@ -102,7 +102,7 @@ class Fire
     public:
         Fire();
         void draw();
-        
+
 };
 
 #endif //GRAPHICS_SQUELETTE_FIRE_H
