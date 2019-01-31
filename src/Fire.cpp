@@ -340,10 +340,11 @@ void Fire::updateFlame()
     }
 }
 
-Fire::Fire():
+Fire::Fire(glm::mat4 placementMatrix):
         log(Cylinder(50)),
         rock(Sphere(50,50)),
-        flameParticle(Cube())
+        flameParticle(Cube()),
+        globalPlacementMatrix(placementMatrix)
 {
     nbVerticesTot = rock.getNbVertices() + flameParticle.getNbVertices() + log.getNbVertices();
 
@@ -412,7 +413,7 @@ void Fire::draw(Camera const& currentCamera)
     for(int i = 0 ;i<9 ; i++ )
     {
         glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
-        glm::mat4 uMvpMat = currentCamera.lookAt()*finalCylinderTranform;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*globalPlacementMatrix*finalCylinderTranform;
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
@@ -449,7 +450,7 @@ void Fire::draw(Camera const& currentCamera)
     {
 
         glm::mat4 finalRockTranform = preRotation*shapeTransformationMatrix;
-        glm::mat4 uMvpMat = currentCamera.lookAt()*finalRockTranform;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*globalPlacementMatrix*finalRockTranform;
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
@@ -513,13 +514,13 @@ void Fire::draw(Camera const& currentCamera)
         //lateral offset
         shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(lateralOffset.at(i).first,0.f,lateralOffset.at(i).second));
         //addition of the vertical and wind offset
-        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.f,verticalParticleOffset.at(i),windOffset.at(i)));
+        shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(windOffset.at(i),verticalParticleOffset.at(i),0.f));
         //setting the current flame particle size
         shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(particleSize.at(i),particleSize.at(i),particleSize.at(i)));
         //affectation of the rotation to the flame
         shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,rotationOffset.at(i),glm::vec3(0.0f,1.0f,0.0f));
 
-        glm::mat4 uMvpMat = currentCamera.lookAt()*shapeTransformationMatrix;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*globalPlacementMatrix*shapeTransformationMatrix;
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));

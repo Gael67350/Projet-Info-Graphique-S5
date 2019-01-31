@@ -89,6 +89,9 @@ class Fire
         //definition of the wind offset for the flame
             std::vector<float> windOffset;
 
+        //definition of the global placement matrix
+            glm::mat4 globalPlacementMatrix;
+
         //private separated functions for clarity
             void initBuffer();
             void initShaders();
@@ -101,7 +104,7 @@ class Fire
         uint32_t nbVerticesTot;
 
     public:
-        Fire();
+        Fire(glm::mat4 placementMatrix);
         void draw(Camera const& currentCamera);
 
 };

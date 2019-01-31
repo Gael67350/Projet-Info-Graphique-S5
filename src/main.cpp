@@ -141,8 +141,11 @@ int main(int argc, char *argv[]) {
 	}
 
 
-    //loading Fire
-    Fire campFire;
+    //loading Fire and it's global modification matrix modification
+    glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
+    fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.6f,0.6f,0.6f));
+	fireModificationMatrix = glm::translate(fireModificationMatrix,glm::vec3(-0.3f,0.f,-7.f));
+    Fire campFire(fireModificationMatrix);
 
 	bool isOpened = true;
 
