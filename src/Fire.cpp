@@ -282,6 +282,7 @@ void Fire::initParticleSystem()
 
 void Fire::updateFlame()
 {
+
     //windVariation
     if(windDirection)
     {
@@ -295,7 +296,6 @@ void Fire::updateFlame()
         if(currentWindOffset <= 0)
             windDirection = true;
     }
-
 
     for(int i = 0 ; i<verticalParticleOffset.size() ; i++)
     {
@@ -312,15 +312,20 @@ void Fire::updateFlame()
             windOffset.at(i) = 0.0;
 
         //updating rotation
-        rotationOffset.at(i) =  2*(verticalParticleOffset.at(i)-beginPoint);
+        rotationOffset.at(i) = 3.14*(verticalParticleOffset.at(i)/endPoint);
 
         //updating color
+        //blue color at the flame's basis
         if(verticalParticleOffset.at(i) < beginPoint+0.1)
             particlesColor.at(i) = glm::vec4(0.f,0.f,1.f,0.65f);
+        //clear yellow to orange
         else if(verticalParticleOffset.at(i) < endPoint/1.3)
             particlesColor.at(i) = glm::vec4(1.f,1.f-(verticalParticleOffset.at(i)/(endPoint/1.3)),0.f,0.65f);
+        //fading to black then grey for smoke
         else
-            particlesColor.at(i) = glm::vec4( (1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-0.9f)) ? (1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-0.9f)) : 0.0f ,0.0f,0.f,0.65f);
+            particlesColor.at(i) = (1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-1.18f)) ?
+                                   glm::vec4((1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-1.18f)),0.0f,0.0f,0.65f)
+                                   : glm::vec4(0.1f,0.1f,0.1f,0.65f);
 
         //updatingFlameSize
         if (verticalParticleOffset.at(i) < endPoint-0.8)
@@ -329,7 +334,7 @@ void Fire::updateFlame()
         }
         else
         {
-            particleSize.at(i) -= 0.01;
+            particleSize.at(i) -= 0.014;
         }
 
     }
@@ -348,7 +353,7 @@ Fire::Fire():
     initParticleSystem();
 }
 
-void Fire::draw()
+void Fire::draw(Camera const& currentCamera)
 {
     //selection of the texture display program
     glUseProgram(textureShader->getProgramID());
@@ -383,20 +388,6 @@ void Fire::draw()
 
     //definition of the global modification matrix used
 
-    //definition of the projection matrix same for all painted elements
-
-    glm::vec3 cameraPos(-3.5f, 3.5f, 0);
-    glm::vec3 cameraTarget(0, 0, 0);
-    glm::vec3 cameraUp(1.f, 1.f, 0.f);
-
-    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-    glm::mat4 proj = glm::perspective(glm::radians(110.f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
-
-    //inputing the mvp matrix into the shader
-    glm::mat4 mvp = proj*view;
-
-    glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
-
     //shape transformation matrix to move the different objects
 
     glm::mat4 shapeTransformationMatrix(1.0f);
@@ -421,9 +412,10 @@ void Fire::draw()
     for(int i = 0 ;i<9 ; i++ )
     {
         glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
-        GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
-        glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(finalCylinderTranform));
+        glm::mat4 uMvpMat = currentCamera.lookAt()*finalCylinderTranform;
 
+        //reafectation of the projection matrix
+        glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
         //figure draw
 
         glDrawArrays(GL_TRIANGLES, 0, log.getNbVertices());
@@ -455,9 +447,12 @@ void Fire::draw()
 
     for(int i = 0 ;i<=19 ; i++ )
     {
-        glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
-        GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
-        glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(finalCylinderTranform));
+
+        glm::mat4 finalRockTranform = preRotation*shapeTransformationMatrix;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*finalRockTranform;
+
+        //reafectation of the projection matrix
+        glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
 
         //figure draw
 
@@ -504,10 +499,6 @@ void Fire::draw()
     //definition of new parameter which were not in the texture shader
     GLint uColor = glGetUniformLocation(colorShader->getProgramID(), "uColor");
 
-    //reafectation of the projection matrix
-
-    glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(mvp));
-
     //begin of the flame drawing section
 
     for(int i = 0 ;i<verticalParticleOffset.size() ; i++ )
@@ -519,17 +510,19 @@ void Fire::draw()
 
         shapeTransformationMatrix = glm::mat4(1.f);
 
-        //shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,rotationOffset.at(0),glm::vec3(0.0f,1.0f,0.0f));
-
         //lateral offset
         shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(lateralOffset.at(i).first,0.f,lateralOffset.at(i).second));
         //addition of the vertical and wind offset
         shapeTransformationMatrix = glm::translate(shapeTransformationMatrix,glm::vec3(0.f,verticalParticleOffset.at(i),windOffset.at(i)));
-
+        //setting the current flame particle size
         shapeTransformationMatrix = glm::scale(shapeTransformationMatrix,glm::vec3(particleSize.at(i),particleSize.at(i),particleSize.at(i)));
+        //affectation of the rotation to the flame
+        shapeTransformationMatrix = glm::rotate(shapeTransformationMatrix,rotationOffset.at(i),glm::vec3(0.0f,1.0f,0.0f));
 
-        GLint uTransfo = glGetUniformLocation(colorShader->getProgramID(),"uTransfo");
-        glUniformMatrix4fv(uTransfo,1,false,glm::value_ptr(shapeTransformationMatrix));
+        glm::mat4 uMvpMat = currentCamera.lookAt()*shapeTransformationMatrix;
+
+        //reafectation of the projection matrix
+        glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
 
         //figure draw
 

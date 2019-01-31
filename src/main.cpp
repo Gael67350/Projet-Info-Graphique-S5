@@ -140,9 +140,10 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-  //loading Fire
-  Fire campFire;
-  
+
+    //loading Fire
+    Fire campFire;
+
 	bool isOpened = true;
 
 	//Main application loop
@@ -175,8 +176,8 @@ int main(int argc, char *argv[]) {
 			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 1.f);
 		}
 
-    //Draw fire
-    campFire.draw();
+        //Draw fire
+        campFire.draw(camera);
 
     
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)

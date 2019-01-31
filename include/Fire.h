@@ -27,12 +27,13 @@
 #include "Cylinder.h"
 #include "Sphere.h"
 
+#include "Camera.h"
+
 //other native c++ library used in the program
 #include<vector>
 #include<algorithm>
 #include <random>
 #include <chrono>
-
 
 #define WIDTH     800
 #define HEIGHT    600
@@ -101,7 +102,7 @@ class Fire
 
     public:
         Fire();
-        void draw();
+        void draw(Camera const& currentCamera);
 
 };
 
