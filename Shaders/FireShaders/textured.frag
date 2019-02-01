@@ -4,8 +4,6 @@ precision mediump float;
 varying vec2 vary_uv;
 uniform sampler2D uTexture;
 
-varying vec4 varyPosition;
-
 void main()
 {
     //definition of the texture mapping
