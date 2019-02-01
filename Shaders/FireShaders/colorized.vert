@@ -2,7 +2,6 @@
 precision mediump float;
 
 attribute vec3 vPosition;
-uniform mat4 uTransfo;
 uniform mat4 uMvp;
 
 //normals
@@ -17,6 +16,6 @@ varying vec4 varyColor;
 
 void main()
 {
-    gl_Position = uMvp*uTransfo*vec4(vPosition, 1.0); 
+    gl_Position = uMvp*vec4(vPosition, 1.0); 
     varyColor = uColor;
 }
