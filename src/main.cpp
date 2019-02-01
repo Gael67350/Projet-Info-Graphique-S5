@@ -80,11 +80,11 @@ int main(int argc, char *argv[])
     GLuint myBuffer;
     glGenBuffers(1, &myBuffer);
 
-    glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
+      glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
       glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3)*sizeof(float), NULL, GL_DYNAMIC_DRAW);
       glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * cube.getNbVertices(), cube.getVertices());
       glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     //Camera
     glm::mat4 projection = glm::perspective(glm::radians(110.f), (float) WIDTH / HEIGHT, 0.1f, 100.f);
@@ -157,16 +157,21 @@ int main(int argc, char *argv[])
           matrices.pop();
 
           float angle = M_PI / 2.0;
-          glm::mat4 rotateX = glm::rotate(glm::mat4(1.f), angle, glm::vec3(1.f, 0, 0));
+          glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.5f));
+          glm::mat4 rotateX = glm::rotate(translateZ, angle, glm::vec3(1.f, 0, 0));
 
           matrices.push(matrices.top() * rotateX * model);
           glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
           glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
           glFinish();
           matrices.pop();
+          // glm::mat4 translateX = glm::translate(rotateZ, glm::vec3(0.5f, 0, 0));
+          glm::mat4 translateX = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0, 0));
+         // glm::mat4 rotateZ = glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 0, 1.f));
+          
+          glm::mat4 rotateZ = glm::rotate(translateX, angle, glm::vec3(0, 0, 1.f));
 
-          glm::mat4 rotateZ = glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 0, 1.f));
-          matrices.push(matrices.top() * rotateZ * model);
+          matrices.push(matrices.top() * rotateZ* model);
 
           glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
           glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
