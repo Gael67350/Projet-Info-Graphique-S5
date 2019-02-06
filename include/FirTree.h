@@ -19,33 +19,34 @@ public:
 
 	bool draw(Camera &camera, glm::vec3 const &position = { 0,0,0 }, float const &scaling = 1.f);
 
-	const float* getVertices() const { return &m_vertices[0]; }
+	const float* getVertices() const;
 
-	const float* getNormals() const { return &m_normals[0]; }
+	const float* getNormals() const;
 
-	const float* getColors() const { return &m_colors[0]; }
+	const float* getColors() const;
 
-	const float* getUVs() const { return &m_uvs[0]; }
+	const float* getUVs() const;
 
-	uint32_t getNbVertices() const { return m_nbVertices; }
+	uint32_t getNbVertices() const { return (m_trunkVertices.size() + m_leavesVertices.size()) / 3; }
 
-	uint32_t getNbTrunkVertices() const { return m_nbTrunkVertices; }
+	uint32_t getNbTrunkVertices() const { return m_trunkVertices.size() / 3; }
 
-	uint32_t getNbLeavesVertices() const { return m_nbLeavesVertices; }
+	uint32_t getNbLeavesVertices() const { return m_leavesVertices.size() / 3; }
 
 private:
 	static bool isInit;
 
 	void initShadersData();
 
-	uint32_t m_nbVertices = 0;
-	uint32_t m_nbTrunkVertices = 0;
-	uint32_t m_nbLeavesVertices = 0;
+	std::vector<float> m_trunkVertices;
+	std::vector<float> m_trunkNormals;
+	std::vector<float> m_trunkColors;
+	std::vector<float> m_trunkUVs;
 
-	std::vector<float> m_vertices;
-	std::vector<float> m_normals;
-	std::vector<float> m_colors;
-	std::vector<float> m_uvs;
+	std::vector<float> m_leavesVertices;
+	std::vector<float> m_leavesNormals;
+	std::vector<float> m_leavesColors;
+	std::vector<float> m_leavesUVs;
 
 	GLuint m_buffer;
 

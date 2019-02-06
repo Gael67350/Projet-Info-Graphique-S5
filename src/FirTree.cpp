@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <stack>
+#include <iterator>
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -18,41 +19,32 @@ FirTree::FirTree(uint32_t nbLatitude) {
 	Cylinder trunk = Cylinder(nbLatitude);
 	Cone leaves = Cone(nbLatitude, 0);
 
-	m_nbVertices = trunk.getNbVertices() + leaves.getNbVertices();
-	m_nbTrunkVertices = trunk.getNbVertices();
-	m_nbLeavesVertices = leaves.getNbVertices();
+	m_trunkVertices.assign(trunk.getVertices(), trunk.getVertices() + (3 * trunk.getNbVertices()));
+	m_leavesVertices.assign(leaves.getVertices(), leaves.getVertices() + (3 * leaves.getNbVertices()));
 
-	m_vertices.resize(3 * m_nbVertices);
-	m_normals.resize(3 * m_nbVertices);
-	m_colors.resize(3 * m_nbVertices);
-	m_uvs.resize(2 * m_nbVertices);
+	m_trunkNormals.assign(trunk.getNormals(), trunk.getNormals() + (3 * trunk.getNbVertices()));
+	m_leavesNormals.assign(leaves.getNormals(), leaves.getNormals() + (3 * leaves.getNbVertices()));
 
-	// Copy vertices
-	std::copy(trunk.getVertices(), trunk.getVertices() + (3 * trunk.getNbVertices()), m_vertices.begin());
-	std::copy(leaves.getVertices(), leaves.getVertices() + (3 * leaves.getNbVertices()), m_vertices.begin() + (3 * trunk.getNbVertices()));
-
-	// Copy normals
-	std::copy(trunk.getNormals(), trunk.getNormals() + (3 * trunk.getNbVertices()), m_normals.begin());
-	std::copy(leaves.getNormals(), leaves.getNormals() + (3 * leaves.getNbVertices()), m_normals.begin() + (3 * trunk.getNbVertices()));
-
-	// Copy uvs
-	std::copy(trunk.getUVs(), trunk.getUVs() + (2 * trunk.getNbVertices()), m_uvs.begin());
-	std::copy(leaves.getUVs(), leaves.getUVs() + (2 * leaves.getNbVertices()), m_uvs.begin() + (2 * trunk.getNbVertices()));
+	m_trunkUVs.assign(trunk.getUVs(), trunk.getUVs() + (2 * trunk.getNbVertices()));
+	m_leavesUVs.assign(leaves.getUVs(), leaves.getUVs() + (2 * leaves.getNbVertices()));
 
 	// Fill colors
+	m_trunkColors.resize(3 * trunk.getNbVertices());
+	m_leavesColors.resize(3 * leaves.getNbVertices());
+
 	glm::vec3 trunkColor(0.875f, 0.592f, .027f);	// Brown
 	glm::vec3 leavesColor(0.078f, 0.353f, 0.196f);	// Dark green
 
-	for (uint32_t i = 0; i < (3 * m_nbTrunkVertices); i += 3) {
-		m_colors[i] = trunkColor.r;
-		m_colors[i + 1] = trunkColor.g;
-		m_colors[i + 2] = trunkColor.b;
+	for (uint32_t i = 0; i < m_trunkColors.size(); i += 3) {
+		m_trunkColors[i] = trunkColor.r;
+		m_trunkColors[i + 1] = trunkColor.g;
+		m_trunkColors[i + 2] = trunkColor.b;
 	}
 
-	for (uint32_t i = (3 * m_nbTrunkVertices); i < (3 * (m_nbTrunkVertices + m_nbLeavesVertices)); i += 3) {
-		m_colors[i] = leavesColor.r;
-		m_colors[i + 1] = leavesColor.g;
-		m_colors[i + 2] = leavesColor.b;
+	for (uint32_t i = 0; i < m_leavesColors.size(); i += 3) {
+		m_leavesColors[i] = leavesColor.r;
+		m_leavesColors[i + 1] = leavesColor.g;
+		m_leavesColors[i + 2] = leavesColor.b;
 	}
 
 	// Put all fir tree parts in the VBO
@@ -61,10 +53,25 @@ FirTree::FirTree(uint32_t nbLatitude) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, firTreeBuffer);
 
-	glBufferData(GL_ARRAY_BUFFER, (3 + 3 + 3 + 2) * sizeof(float) * getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * getNbVertices(), getVertices());
-	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * getNbVertices(), 3 * sizeof(float) * getNbVertices(), getColors());
-	glBufferSubData(GL_ARRAY_BUFFER, 6 * sizeof(float) * getNbVertices(), 2 * sizeof(float) * getNbVertices(), getUVs());
+	glBufferData(GL_ARRAY_BUFFER, (3 + 3 + 2) * sizeof(float) * getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
+
+	int offset = 0;
+	// Vertices
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 3 * getNbTrunkVertices() * sizeof(float), &m_trunkVertices[0]);
+	offset += 3 * getNbTrunkVertices() * sizeof(float);
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 3 * getNbLeavesVertices() * sizeof(float), &m_leavesVertices[0]);
+	offset += 3 * getNbLeavesVertices() * sizeof(float);
+
+	// Colors
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 3 * getNbTrunkVertices() * sizeof(float), &m_trunkColors[0]);
+	offset += 3 * getNbTrunkVertices() * sizeof(float);
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 3 * getNbLeavesVertices() * sizeof(float), &m_leavesColors[0]);
+	offset += 3 * getNbLeavesVertices() * sizeof(float);
+
+	// UVs
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 2 * getNbTrunkVertices() * sizeof(float), &m_trunkUVs[0]);
+	offset += 2 * getNbTrunkVertices() * sizeof(float);
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 2 * getNbLeavesVertices() * sizeof(float), &m_leavesUVs[0]);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -81,6 +88,46 @@ FirTree::~FirTree() {
 	for (SDL_Surface* &texture : m_textures) {
 		SDL_FreeSurface(texture);
 	}
+}
+
+const float * FirTree::getVertices() const {
+	std::vector<float> vertices;
+
+	// Copy vertices
+	std::copy(m_trunkVertices.begin(), m_trunkVertices.end(), std::back_inserter(vertices));
+	std::copy(m_leavesVertices.begin(), m_leavesVertices.end(), std::back_inserter(vertices));
+
+	return &vertices[0];
+}
+
+const float * FirTree::getNormals() const {
+	std::vector<float> normals;
+
+	// Copy normals
+	std::copy(m_trunkNormals.begin(), m_trunkNormals.end(), std::back_inserter(normals));
+	std::copy(m_leavesNormals.begin(), m_leavesNormals.end(), std::back_inserter(normals));
+
+	return &normals[0];
+}
+
+const float * FirTree::getColors() const {
+	std::vector<float> colors;
+
+	// Copy uvs
+	std::copy(m_trunkColors.begin(), m_trunkColors.end(), std::back_inserter(colors));
+	std::copy(m_leavesColors.begin(), m_leavesColors.end(), std::back_inserter(colors));
+
+	return &colors[0];
+}
+
+const float * FirTree::getUVs() const {
+	std::vector<float> uvs;
+
+	// Copy uvs
+	std::copy(m_trunkUVs.begin(), m_trunkUVs.end(), std::back_inserter(uvs));
+	std::copy(m_leavesUVs.begin(), m_leavesUVs.end(), std::back_inserter(uvs));
+
+	return &uvs[0];
 }
 
 bool FirTree::loadShaders() {
@@ -147,7 +194,6 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	// Trunk transformations
 	glm::mat4 trunkRotation = glm::rotate(id, -angleRad, glm::vec3(1.f, 0, 0));
-	//glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(0.75f, 0.75f, 4.f));
 	glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(scaling * 0.75f, scaling * 0.75f, scaling * 4.f));
 	glm::mat4 trunkModel = glm::translate(trunkScaling, glm::vec3(-position.x, -position.z, position.y));
 
@@ -189,7 +235,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texturesIDs[0]);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, getNbTrunkVertices());
+	glDrawArrays(GL_TRIANGLES, 0, getNbTrunkVertices());
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glUseProgram(0);
@@ -201,19 +247,19 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	uMVP = glGetUniformLocation(colorizedShader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
-	glDrawArrays(GL_TRIANGLE_STRIP, getNbTrunkVertices(), getNbLeavesVertices());
+	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 2nd range of leaves
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
-	glDrawArrays(GL_TRIANGLE_STRIP, getNbTrunkVertices(), getNbLeavesVertices());
+	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 3rd range of leaves
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
-	glDrawArrays(GL_TRIANGLE_STRIP, getNbTrunkVertices(), getNbLeavesVertices());
+	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbVertices());
 
 	glUseProgram(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -240,14 +286,18 @@ void FirTree::initShadersData() {
 	glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
 
 	// Colorized Shader
+	int offset = 0;
+
 	glUseProgram(colorizedShader->getProgramID());
 
 	vPosition = glGetAttribLocation(colorizedShader->getProgramID(), "vPosition");
-	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vPosition);
 
+	offset += 3 * getNbVertices() * sizeof(float);
+
 	vColor = glGetAttribLocation(colorizedShader->getProgramID(), "vColor");
-	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, (void*)(3 * sizeof(float) * getNbVertices()));
+	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vColor);
 
 	glUseProgram(0);
@@ -255,16 +305,22 @@ void FirTree::initShadersData() {
 	// Textured Shader
 	glUseProgram(texturedShader->getProgramID());
 
+	offset = 0;
+
 	vPosition = glGetAttribLocation(texturedShader->getProgramID(), "vPosition");
-	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vPosition);
 
+	offset += 3 * getNbVertices() * sizeof(float);
+
 	vColor = glGetAttribLocation(texturedShader->getProgramID(), "vColor");
-	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, (void*)(3 * sizeof(float) * getNbVertices()));
+	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vColor);
 
+	offset += 3 * getNbVertices() * sizeof(float);
+
 	vUV = glGetAttribLocation(texturedShader->getProgramID(), "vUV");
-	glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, (void*)(6 * sizeof(float) * getNbVertices()));
+	glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vUV);
 
 	glUseProgram(0);
