@@ -79,13 +79,6 @@ int main(int argc, char *argv[]) {
 	//The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
 	glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
 
-	glEnable(GL_DEPTH_TEST); //Active the depth test
-
-	//enableing transparency
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	//TODO
 	//From here you can load your OpenGL objects, like VBO, Shaders, etc.
 
@@ -181,7 +174,6 @@ int main(int argc, char *argv[]) {
 
         //Draw fire
         campFire.draw(camera);
-
     
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
 		SDL_GL_SwapWindow(window);

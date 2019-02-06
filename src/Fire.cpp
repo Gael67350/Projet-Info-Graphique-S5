@@ -337,6 +337,11 @@ void Fire::updateFlame()
             particleSize.at(i) -= 0.014;
         }
 
+        //updating light intensity
+        float newLightIntencity = ((float)rand()/(float)RAND_MAX)/2-0.25 + lightIntencity;
+        if(newLightIntencity >= 0.5 && newLightIntencity <= 1.0)
+            lightIntencity = newLightIntencity;
+
     }
 }
 
@@ -352,10 +357,22 @@ Fire::Fire(glm::mat4 placementMatrix):
     initTextures();
     initShaders();
     initParticleSystem();
+
+    //initialisation of light
+    lightPosition = globalPlacementMatrix*glm::vec4(0.0,1.0,0.0,0.0);
+    lightIntencity = 1.0;
+    srand(time(NULL));
 }
 
 void Fire::draw(Camera const& currentCamera)
 {
+    glEnable(GL_DEPTH_TEST); //Activation of the depth test
+
+    //enableing transparency
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     //selection of the texture display program
     glUseProgram(textureShader->getProgramID());
     glBindBuffer(GL_ARRAY_BUFFER,fireBuffer);
@@ -536,6 +553,14 @@ void Fire::draw(Camera const& currentCamera)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
+
+    //disabling the transparency
+
+    //disabling transparency
+    glDisable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+
+    glDisable(GL_DEPTH_TEST); //Activation of the depth test
 
     //end of the fire drawing section
 

@@ -101,11 +101,19 @@ class Fire
             void updateFlame();
 
         //useful data
-        uint32_t nbVerticesTot;
+            uint32_t nbVerticesTot;
+
+        //variables used for the light simulation
+            glm::vec3 lightPosition;
+            float lightIntencity;
 
     public:
         Fire(glm::mat4 placementMatrix);
         void draw(Camera const& currentCamera);
+        std::pair<glm::vec3,float> getLightInfo()
+        {
+            return std::pair<glm::vec3,float>(lightPosition,lightIntencity);
+        }
 
 };
 
