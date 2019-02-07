@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
 
 		// Draw forest
 		for (glm::vec3 const &coord : treesCoordinates) {
-			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 1.f);
+			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);
 		}
 
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
