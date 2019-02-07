@@ -1,6 +1,6 @@
 //SDL Libraries
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
+//#include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
 
 //OpenGL Libraries
@@ -15,6 +15,8 @@
 #include "Shader.h"
 
 #include "logger.h"
+
+#include <Fire.h>
 
 // Geometry
 #include <Geometry.h>
@@ -34,7 +36,6 @@
 #define HEIGHT    600
 #define FRAMERATE 60
 #define TIME_PER_FRAME_MS  (1.0f/FRAMERATE * 1e3)
-#define INDICE_TO_PTR(x) ((void*)(x))
 
 int main(int argc, char *argv[]) {
 	////////////////////////////////////////
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]) {
 		ERROR("Could not load SDL2_image with JPG files\n");
 		return EXIT_FAILURE;
 	}
+
 
 	//Create a Window
 	SDL_Window *window = SDL_CreateWindow("VR Camera",                           //Titre
@@ -76,8 +78,6 @@ int main(int argc, char *argv[]) {
 
 	//The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
 	glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
-
-	glEnable(GL_DEPTH_TEST); //Active the depth test
 
 	//TODO
 	//From here you can load your OpenGL objects, like VBO, Shaders, etc.
@@ -133,6 +133,21 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
+
+    //loading Fire and it's global modification matrix modification
+    glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
+    fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.6f,0.6f,0.6f));
+	fireModificationMatrix = glm::translate(fireModificationMatrix,glm::vec3(-0.3f,0.f,-7.f));
+    Fire campFire(fireModificationMatrix);
+
+    //setting up the transparency management
+    glEnable(GL_DEPTH_TEST); //Activation of the depth test
+
+    //enableing transparency
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	bool isOpened = true;
 
 	//Main application loop
@@ -165,6 +180,9 @@ int main(int argc, char *argv[]) {
 			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);
 		}
 
+        //Draw fire
+        campFire.draw(camera);
+    
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
 		SDL_GL_SwapWindow(window);
 

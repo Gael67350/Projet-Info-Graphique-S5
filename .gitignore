@@ -8,3 +8,5 @@
 
 # IntelliJ CLion
 /.idea/
+
+cmake-build-debug/

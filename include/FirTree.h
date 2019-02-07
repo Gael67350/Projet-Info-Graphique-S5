@@ -34,7 +34,6 @@ public:
 	uint32_t getNbLeavesVertices() const { return m_leavesVertices.size() / 3; }
 
 private:
-	static bool isInit;
 
 	void initShadersData();
 

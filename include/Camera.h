@@ -12,7 +12,7 @@ public:
 
 	Camera(float aspectRatio = 1920 / 1080.f, float m_fov = 45.f);
 
-	glm::mat4 lookAt();
+	glm::mat4 lookAt() const;
 
 	glm::vec3 getPosition() const;
 

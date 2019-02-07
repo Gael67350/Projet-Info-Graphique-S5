@@ -190,9 +190,8 @@ void FirTree::loadTextures() {
 }
 
 bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
-	if (!isInit) {
-		initShadersData();
-	}
+
+    initShadersData();
 
 	float angleRad = 90 * (M_PI / 180.f);
 
@@ -332,8 +331,4 @@ void FirTree::initShadersData() {
 	glUseProgram(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	isInit = true;
 }
-
-bool FirTree::isInit = false;
