@@ -140,6 +140,14 @@ int main(int argc, char *argv[]) {
 	fireModificationMatrix = glm::translate(fireModificationMatrix,glm::vec3(-0.3f,0.f,-7.f));
     Fire campFire(fireModificationMatrix);
 
+    //setting up the transparency management
+    glEnable(GL_DEPTH_TEST); //Activation of the depth test
+
+    //enableing transparency
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	bool isOpened = true;
 
 	//Main application loop
