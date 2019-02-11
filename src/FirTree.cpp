@@ -190,9 +190,6 @@ void FirTree::loadTextures() {
 }
 
 bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
-
-    initShadersData();
-
 	float angleRad = 90 * (M_PI / 180.f);
 
 	glm::mat4 id(1.f);
@@ -232,6 +229,8 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	// Textures
 	glUseProgram(texturedShader->getProgramID());
 
+	initTexturedShaderData();
+
 	uMVP = glGetUniformLocation(texturedShader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
 
@@ -249,6 +248,8 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	// Draw 1st range of leaves
 	glUseProgram(colorizedShader->getProgramID());
+
+	initColorizedShaderData();
 
 	uMVP = glGetUniformLocation(colorizedShader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
@@ -282,18 +283,13 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	return true;
 }
 
-void FirTree::initShadersData() {
+void FirTree::initColorizedShaderData() {
 	Shader* colorizedShader = m_shaders[0];
-	Shader* texturedShader = m_shaders[1];
 
-	GLint vPosition, vColor, vUV;
+	GLint vPosition, vColor;
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
-
-	// Colorized Shader
+	// Colorized Shader data
 	int offset = 0;
-
-	glUseProgram(colorizedShader->getProgramID());
 
 	vPosition = glGetAttribLocation(colorizedShader->getProgramID(), "vPosition");
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
@@ -304,13 +300,15 @@ void FirTree::initShadersData() {
 	vColor = glGetAttribLocation(colorizedShader->getProgramID(), "vColor");
 	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vColor);
+}
 
-	glUseProgram(0);
+void FirTree::initTexturedShaderData() {
+	Shader* texturedShader = m_shaders[1];
 
-	// Textured Shader
-	glUseProgram(texturedShader->getProgramID());
+	GLint vPosition, vColor, vUV;
 
-	offset = 0;
+	// Textured Shader data
+	int offset = 0;
 
 	vPosition = glGetAttribLocation(texturedShader->getProgramID(), "vPosition");
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
@@ -327,8 +325,4 @@ void FirTree::initShadersData() {
 	vUV = glGetAttribLocation(texturedShader->getProgramID(), "vUV");
 	glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vUV);
-
-	glUseProgram(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

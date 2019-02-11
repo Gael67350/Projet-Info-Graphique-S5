@@ -35,7 +35,8 @@ public:
 
 private:
 
-	void initShadersData();
+	void initColorizedShaderData();
+	void initTexturedShaderData();
 
 	std::vector<float> m_trunkVertices;
 	std::vector<float> m_trunkNormals;
