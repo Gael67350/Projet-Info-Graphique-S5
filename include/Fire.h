@@ -30,10 +30,11 @@
 #include "Camera.h"
 
 //other native c++ library used in the program
-#include<vector>
-#include<algorithm>
+#include <vector>
+#include <algorithm>
 #include <random>
 #include <chrono>
+#include <tuple>
 
 #define WIDTH     800
 #define HEIGHT    600
@@ -106,13 +107,15 @@ class Fire
         //variables used for the light simulation
             glm::vec3 lightPosition;
             float lightIntensity;
+            glm::vec3 lightColor;
 
     public:
         Fire(glm::mat4 placementMatrix);
         void draw(Camera const& currentCamera);
-        std::pair<glm::vec3,float> getLightInfo()
+
+        std::tuple<glm::vec3,float,glm::vec3> getLightInfo()
         {
-            return std::pair<glm::vec3,float>(lightPosition,lightIntensity);
+            return std::tuple<glm::vec3,float,glm::vec3>(lightPosition,lightIntensity,lightColor);
         }
 
 };

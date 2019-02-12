@@ -361,6 +361,10 @@ Fire::Fire(glm::mat4 placementMatrix):
     //initialisation of light
     lightPosition = globalPlacementMatrix*glm::vec4(0.0,1.0,0.0,0.0);
     lightIntensity = 1.0;
+
+    lightColor = glm::vec3(1.0f,0.847f,0.f);
+
+    //initialising random seed to randomize light variations
     srand(time(NULL));
 }
 
