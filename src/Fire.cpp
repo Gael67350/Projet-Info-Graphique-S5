@@ -338,9 +338,9 @@ void Fire::updateFlame()
         }
 
         //updating light intensity
-        float newLightIntencity = ((float)rand()/(float)RAND_MAX)/2-0.25 + lightIntencity;
-        if(newLightIntencity >= 0.5 && newLightIntencity <= 1.0)
-            lightIntencity = newLightIntencity;
+        float newLightIntensity = ((float)rand()/(float)RAND_MAX)/2-0.25 + lightIntensity;
+        if(newLightIntensity >= 0.5 && newLightIntensity <= 1.0)
+            lightIntensity = newLightIntensity;
 
     }
 }
@@ -360,7 +360,7 @@ Fire::Fire(glm::mat4 placementMatrix):
 
     //initialisation of light
     lightPosition = globalPlacementMatrix*glm::vec4(0.0,1.0,0.0,0.0);
-    lightIntencity = 1.0;
+    lightIntensity = 1.0;
     srand(time(NULL));
 }
 

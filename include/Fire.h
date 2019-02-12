@@ -105,14 +105,14 @@ class Fire
 
         //variables used for the light simulation
             glm::vec3 lightPosition;
-            float lightIntencity;
+            float lightIntensity;
 
     public:
         Fire(glm::mat4 placementMatrix);
         void draw(Camera const& currentCamera);
         std::pair<glm::vec3,float> getLightInfo()
         {
-            return std::pair<glm::vec3,float>(lightPosition,lightIntencity);
+            return std::pair<glm::vec3,float>(lightPosition,lightIntensity);
         }
 
 };
