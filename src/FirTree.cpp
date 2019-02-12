@@ -253,19 +253,19 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	uMVP = glGetUniformLocation(colorizedShader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
-	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbVertices());
+	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 2nd range of leaves
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
-	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbVertices());
+	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 3rd range of leaves
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
-	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbVertices());
+	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	glUseProgram(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
