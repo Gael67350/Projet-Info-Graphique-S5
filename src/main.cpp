@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 
 	// View from world space to camera space
 	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
-	camera.setPosition(glm::vec3(0, 4.f, -10.f));
+	camera.setPosition(glm::vec3(0, 5.f, -12.f));
 
 	// Generate trees coordinates
 	size_t nbFirTrees = 200;
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
 
     //loading Fire and it's global modification matrix modification
     glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
-    fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.6f,0.6f,0.6f));
+    fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.9f,0.9f,0.9f));
 	fireModificationMatrix = glm::translate(fireModificationMatrix,glm::vec3(-0.3f,0.f,-7.f));
     Fire campFire(fireModificationMatrix);
 
