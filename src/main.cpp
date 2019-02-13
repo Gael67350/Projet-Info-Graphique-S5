@@ -1,3 +1,10 @@
+#define  GLM_FORCE_RADIANS
+
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <stack>
+
 //SDL Libraries
 #include <SDL2/SDL.h>
 //#include <SDL2/SDL_syswm.h>
@@ -13,6 +20,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.h"
+#include "Cube.h"
 
 #include "logger.h"
 
@@ -139,6 +147,30 @@ int main(int argc, char *argv[]) {
     fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.9f,0.9f,0.9f));
 	fireModificationMatrix = glm::translate(fireModificationMatrix,glm::vec3(-0.3f,0.f,-7.f));
     Fire campFire(fireModificationMatrix);
+    
+    // Create environnement
+    Cube cube;
+
+    GLuint myBuffer;
+    glGenBuffers(1, &myBuffer);
+
+      glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
+      glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3)*sizeof(float), NULL, GL_DYNAMIC_DRAW);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * cube.getNbVertices(), cube.getVertices());
+      glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //Camera
+    glm::mat4 projection = glm::perspective(glm::radians(110.f), (float) WIDTH / HEIGHT, 0.1f, 100.f);
+    glm::mat4 view = glm::lookAt(glm::vec3(1.f, 1.f, -1.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+    glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 0.01f, 1.f));
+
+    Shader* shader = Shader::loadFromFiles(fopen("Shaders/color.vert", "r"), fopen("Shaders/color.frag", "r"));
+    if (!shader)
+    {
+      std::cerr << "Could not compile Shader... exiting" << std::endl;
+      return EXIT_FAILURE;
+    }
 
     //setting up the transparency management
     glEnable(GL_DEPTH_TEST); //Activation of the depth test
@@ -182,6 +214,57 @@ int main(int argc, char *argv[]) {
 
         //Draw fire
         campFire.draw(camera);
+        
+        glUseProgram(shader->getProgramID());
+        
+        glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
+
+          GLint vPosition = glGetAttribLocation(shader->getProgramID(), "vPosition");
+          glVertexAttribPointer(vPosition, 3, GL_FLOAT, 0, 0, 0);
+          glEnableVertexAttribArray(vPosition);
+
+          GLint vNormal = glGetAttribLocation(shader->getProgramID(), "vNormal");
+          glVertexAttribPointer(vNormal, 3, GL_FLOAT, 0, 0, INDICE_TO_PTR(3 * cube.getNbVertices() * sizeof(float)));
+          glEnableVertexAttribArray(vNormal);
+          
+          std::stack<glm::mat4> matrices;
+          matrices.push(projection * view); // Camera matrix
+
+          matrices.push(matrices.top() * model);
+
+          GLint v = glGetUniformLocation(shader->getProgramID(), "uMVP");
+          glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+          glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
+          glFinish();
+          matrices.pop();
+
+          float angle = M_PI / 2.0;
+          glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.5f));
+          glm::mat4 rotateX = glm::rotate(translateZ, angle, glm::vec3(1.f, 0, 0));
+
+          matrices.push(matrices.top() * rotateX * model);
+          glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+          glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
+          glFinish();
+          matrices.pop();
+          // glm::mat4 translateX = glm::translate(rotateZ, glm::vec3(0.5f, 0, 0));
+          glm::mat4 translateX = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0, 0));
+         // glm::mat4 rotateZ = glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 0, 1.f));
+          
+          glm::mat4 rotateZ = glm::rotate(translateX, angle, glm::vec3(0, 0, 1.f));
+
+          matrices.push(matrices.top() * rotateZ* model);
+
+          glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+          glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
+          glFinish();
+          matrices.pop();
+
+          matrices.pop(); 
+          
+          glBindBuffer(GL_ARRAY_BUFFER, 0);
+          
+          glUseProgram(0);
     
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
 		SDL_GL_SwapWindow(window);
@@ -196,12 +279,14 @@ int main(int argc, char *argv[]) {
 
 	//Free
 	glUseProgram(0);
+  
+  delete shader;
+  glDeleteBuffers(1, &myBuffer);
 
 	//Free everything
 	if (context != NULL)
 		SDL_GL_DeleteContext(context);
 	if (window != NULL)
 		SDL_DestroyWindow(window);
-
 	return 0;
 }

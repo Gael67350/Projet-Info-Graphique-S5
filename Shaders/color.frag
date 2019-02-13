@@ -1,11 +1,13 @@
 #version 130
 precision mediump float; //Medium precision for float. highp and smallp can also be used
 
-varying vec4 varyColor; //Sometimes we use "out" instead of "varying". "out" should be used in later version of GLSL.
+uniform vec3 color = vec3(0, 1.0, 1.0);
 
-//We still use varying because OpenGLES 2.0 (OpenGL Embedded System, for example for smartphones) does not accept "in" and "out"
+varying vec3 varyNormal;
 
 void main()
 {
-    gl_FragColor = varyColor;
+    gl_FragColor = vec4(color, 1.0);
+    
+    //gl_FragColor = vec4((varyNormal+1.0)/2.0, 1.0);
 }
