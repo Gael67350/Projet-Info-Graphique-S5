@@ -15,6 +15,10 @@ glm::mat4 Camera::lookAt() const{
 	return projection * view;
 }
 
+glm::mat4 Camera::getViewMatrix() const {
+	return glm::lookAt(m_position, m_target, m_verticalAxis);
+}
+
 glm::vec3 Camera::getPosition() const {
 	return m_position;
 }
