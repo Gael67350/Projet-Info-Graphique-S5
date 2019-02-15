@@ -1,4 +1,4 @@
-#define  GLM_FORCE_RADIANS
+﻿#define  GLM_FORCE_RADIANS
 
 #include <iostream>
 #include <cstdlib>
@@ -7,18 +7,18 @@
 
 //SDL Libraries
 #include <SDL2/SDL.h>
-//#include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_image.h>
 
 //OpenGL Libraries
 #include <GL/glew.h>
 #include <GL/gl.h>
-
+#include <stb_image.h>
 //GML libraries
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <vector>
 #include "Shader.h"
 #include "Cube.h"
 
@@ -149,34 +149,210 @@ int main(int argc, char *argv[]) {
     Fire campFire(fireModificationMatrix);
     
     // Create environnement
-    Cube cube;
+    Cube cube = Cube();
 
+	/*unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	std::vector<std::string> faces
+	{
+		"Ressources/right.jpg",
+			"left.jpg",
+			"top.jpg",
+			"bottom.jpg",
+			"front.jpg",
+			"back.jpg"
+	};
+	unsigned int loadCubemap(std::vector<std::string> faces);
+	{
+		unsigned int textureID;
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+		int width, height, nrChannels;
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+			if (data)
+			{
+				// texture_image[i]->sizeX, texture_image[i]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_image[i]->data);
+			
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+					0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+				);
+				stbi_image_free(data);
+			}
+			else
+			{
+				std::cout << "Cubemap texture failed to load at path: " << std::endl;
+				stbi_image_free(data);
+			}
+		};
+
+	
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		return textureID;
+	}
+
+unsigned int cubemapTexture = loadCubemap(faces);
+	glDepthMask(GL_FALSE);
+	//skyboxShader.use();
+	// ... set view and projection matrix
+	*/
+/*std::string faces[]=
+		{
+			"Ressources/right.jpg",
+				"Ressources/left.jpg",
+				"Ressources/top.jpg",
+				"Ressources/down.jpg",
+				"Ressources/front.jpg",
+				"Ressources/back.jpg"
+		};*/
+	
+		if (!(IMG_Init(IMG_INIT_JPG)&IMG_INIT_JPG))
+		{
+			ERROR("could not load SDL2_image with JPG files \n");
+			throw EXIT_FAILURE;
+		}
+
+
+		SDL_Surface* imgleft = IMG_Load("Ressources/left.jpg");
+	/*	SDL_Surface* imgRight = IMG_Load("Ressources/right.jpg");
+		SDL_Surface* imgFront = IMG_Load("Ressources/front.jpg");
+		SDL_Surface* imgBottom = IMG_Load("Ressources/back.jpg");
+		SDL_Surface* imgDown = IMG_Load("Ressources/down.jpg");
+		SDL_Surface* imgUp = IMG_Load("Ressources/up.jpg");
+		
+		*/
+		SDL_Surface* imgLeftRGB = SDL_ConvertSurfaceFormat(imgleft, SDL_PIXELFORMAT_RGBA8888, 0);
+	
+	/*	SDL_Surface* imgRightRGB = SDL_ConvertSurfaceFormat(imgRight, SDL_PIXELFORMAT_RGBA8888, 0);
+		
+		SDL_Surface* imgFrontRGB = SDL_ConvertSurfaceFormat(imgFront, SDL_PIXELFORMAT_RGBA8888, 0);
+		
+		SDL_Surface* imgBottomRGB = SDL_ConvertSurfaceFormat(imgBottom, SDL_PIXELFORMAT_RGBA8888, 0);
+		
+		SDL_Surface* imgDownRGB = SDL_ConvertSurfaceFormat(imgDown, SDL_PIXELFORMAT_RGBA8888, 0);
+
+		SDL_Surface* imgUpRGB = SDL_ConvertSurfaceFormat(imgUp, SDL_PIXELFORMAT_RGBA8888, 0);
+		//SDL_Surface* rockRGB = SDL_ConvertSurfaceFormat(imgRock, SDL_PIXELFORMAT_RGBA8888, 0);
+*/
+		SDL_FreeSurface(imgleft);
+	/*	SDL_FreeSurface(imgRight);
+		SDL_FreeSurface(imgFront);
+		SDL_FreeSurface(imgBottom);
+		SDL_FreeSurface(imgDown);
+		SDL_FreeSurface(imgUp);
+*/
+		//log texture definition
+		GLuint leftTexture;
+		glGenTextures(1, &leftTexture);
+		glBindTexture(GL_TEXTURE_2D, leftTexture);
+
+		//loading textures
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgLeftRGB->w, imgLeftRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgLeftRGB->pixels);
+
+				
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDisable(GL_TEXTURE_2D);
+
+
+		/*GLuint RightTexture;
+		//rock texture definition
+		glGenTextures(1, &RightTexture);
+		glBindTexture(GL_TEXTURE_2D, RightTexture);
+
+		//loading textures
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgRightRGB->w, imgRightRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgRightRGB->pixels);
+
+		GLuint bottomTexture;
+		//rock texture definition
+		glGenTextures(1, &bottomTexture);
+		glBindTexture(GL_TEXTURE_2D, bottomTexture);
+
+		//loading textures
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgBottomRGB->w, imgBottomRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgBottomRGB->pixels);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		*/
+
+//two different programs are defined respectively to display colors for the flame
+  //and to display textures on the rocks and logs
+
+//FILE* VertFileC = fopen("./Shaders/EnvironnementShaders/colore.vert", "r");
+//FILE* FragFileC = fopen("./Shaders/EnvironnementShaders/colore.frag", "r");
+
+FILE* VertFileT = fopen("./Shaders/EnvironnementShaders/EnviTexture.vert", "r");
+FILE* FragFileT = fopen("./Shaders/EnvironnementShaders/EnviTexture.frag", "r");
+
+//auto colorShader = Shader::loadFromFiles(VertFileC, FragFileC);
+Shader* textureShader = Shader::loadFromFiles(VertFileT,FragFileT);
+//fclose(VertFileC);
+//fclose(FragFileC);
+fclose(VertFileT);
+fclose(FragFileT);
+
+if (textureShader == NULL)
+{
+	std::cerr << "COULD NOT LOAD SHADERS" << std::endl;
+	throw;
+}
+/*
+colorShader.use();
+colorShader.setInt("skybox", 0);
+
+textureShader.use();
+Shader.setInt("skybox", 0);*/
+/////////////////////////////////////////////////
     GLuint myBuffer;
+
     glGenBuffers(1, &myBuffer);
 
+
+	
+//SDL_FreeSurface(rgbImg);
       glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
-      glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3)*sizeof(float), NULL, GL_DYNAMIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3 + 2)*sizeof(float), NULL, GL_DYNAMIC_DRAW);
       glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * cube.getNbVertices(), cube.getVertices());
-      glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
+	  glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
+	  glBufferSubData(GL_ARRAY_BUFFER, 6 * sizeof(float) * cube.getNbVertices(), 2 * sizeof(float) * cube.getNbVertices(), cube.getUVs());
+	  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     //Camera
     glm::mat4 projection = glm::perspective(glm::radians(110.f), (float) WIDTH / HEIGHT, 0.1f, 100.f);
     glm::mat4 view = glm::lookAt(glm::vec3(1.f, 1.f, -1.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+	//glm::mat4 view = camera.lookAt();
     glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 0.01f, 1.f));
 
-    Shader* shader = Shader::loadFromFiles(fopen("Shaders/color.vert", "r"), fopen("Shaders/color.frag", "r"));
-    if (!shader)
-    {
-      std::cerr << "Could not compile Shader... exiting" << std::endl;
-      return EXIT_FAILURE;
-    }
 
     //setting up the transparency management
     glEnable(GL_DEPTH_TEST); //Activation of the depth test
 
     //enableing transparency
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -186,7 +362,7 @@ int main(int argc, char *argv[]) {
 	while (isOpened) {
 		//Time in ms telling us when this frame started. Useful for keeping a fix framerate
 		uint32_t timeBegin = SDL_GetTicks();
-
+		 
 		//Fetch the SDL events
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
@@ -215,29 +391,54 @@ int main(int argc, char *argv[]) {
         //Draw fire
         campFire.draw(camera);
         
-        glUseProgram(shader->getProgramID());
+		// Draw environnement
+        glUseProgram(textureShader->getProgramID());
         
         glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
 
-          GLint vPosition = glGetAttribLocation(shader->getProgramID(), "vPosition");
-          glVertexAttribPointer(vPosition, 3, GL_FLOAT, 0, 0, 0);
-          glEnableVertexAttribArray(vPosition);
 
-          GLint vNormal = glGetAttribLocation(shader->getProgramID(), "vNormal");
-          glVertexAttribPointer(vNormal, 3, GL_FLOAT, 0, 0, INDICE_TO_PTR(3 * cube.getNbVertices() * sizeof(float)));
-          glEnableVertexAttribArray(vNormal);
-          
-          std::stack<glm::mat4> matrices;
+		  std::stack<glm::mat4> matrices;
           matrices.push(projection * view); // Camera matrix
+		  //matrices.push(view);
 
-          matrices.push(matrices.top() * model);
 
-          GLint v = glGetUniformLocation(shader->getProgramID(), "uMVP");
-          glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
-          glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
-          glFinish();
-          matrices.pop();
+		//redefinition of the vars passed to the shader
+		//to bind it on the right program
+		   //definition of a variable to store the current reading offset (reusing the one used before for the insertion)
+		  int currentOffset = 0;
 
+		  //definition of the vars passed to the shader
+		  GLint v = glGetUniformLocation(textureShader->getProgramID(), "uMvp");
+		  GLint uTexture = glGetAttribLocation(textureShader->getProgramID(), "uTexture");
+		  GLint vPosition = glGetAttribLocation(textureShader->getProgramID(), "vPosition");
+		  GLint vNormals = glGetAttribLocation(textureShader->getProgramID(), "vNormals");
+		  GLint vUV = glGetAttribLocation(textureShader->getProgramID(), "vUV");
+
+		  //selection of datas in the VBOS
+		  //vertexes
+		  glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
+		  glEnableVertexAttribArray(vPosition);
+
+		  currentOffset += 3 * sizeof(float) * cube.getNbVertices();
+
+		  //normals
+		  glVertexAttribPointer(vNormals, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
+		  glEnableVertexAttribArray(vNormals);
+
+		  currentOffset += 3 * sizeof(float) * cube.getNbVertices();
+
+		  //uvDatas
+		  glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
+		  glEnableVertexAttribArray(vUV);
+
+		  //logs display
+
+		  //texture affectation
+
+		  glActiveTexture(GL_TEXTURE0);
+		  glBindTexture(GL_TEXTURE_2D, leftTexture);
+		  glUniform1i(uTexture, 0);
+		  
           float angle = M_PI / 2.0;
           glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.5f));
           glm::mat4 rotateX = glm::rotate(translateZ, angle, glm::vec3(1.f, 0, 0));
@@ -280,7 +481,7 @@ int main(int argc, char *argv[]) {
 	//Free
 	glUseProgram(0);
   
-  delete shader;
+  delete textureShader;
   glDeleteBuffers(1, &myBuffer);
 
 	//Free everything
