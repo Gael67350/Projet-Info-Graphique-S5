@@ -338,10 +338,17 @@ void Fire::updateFlame()
         }
 
         //updating light intensity
-        float newLightIntensity = ((float)rand()/(float)RAND_MAX)/2-0.25 + lightIntensity;
-        if(newLightIntensity >= 0.5 && newLightIntensity <= 1.0)
-            lightIntensity = newLightIntensity;
-
+        if(fireUpdateCount == 80)
+        {
+            fireUpdateCount = 0;
+            float newLightIntensity = ((float) rand() / (float) RAND_MAX) / 2 - 0.25 + lightIntensity;
+            if (newLightIntensity >= 0.4 && newLightIntensity <= 1.0)
+                lightIntensity = newLightIntensity;
+        }
+        else
+        {
+            fireUpdateCount ++;
+        }
     }
 }
 
@@ -359,10 +366,12 @@ Fire::Fire(glm::mat4 placementMatrix):
     initParticleSystem();
 
     //initialisation of light
-    lightPosition = globalPlacementMatrix*glm::vec4(0.0,1.0,0.0,0.0);
+    lightPosition = globalPlacementMatrix*glm::vec4(0.0,2.0,0.0,1.0);
     lightIntensity = 1.0;
+    ambientIntensity = 0.3;
+    fireUpdateCount = 0;
 
-    lightColor = glm::vec3(1.0f,0.847f,0.f);
+    lightColor = glm::vec3(1.f, 0.631f, 0.239f);
 
     //initialising random seed to randomize light variations
     srand(time(NULL));
@@ -383,6 +392,29 @@ void Fire::draw(Camera const& currentCamera)
     GLint vPosition = glGetAttribLocation(textureShader->getProgramID(),"vPosition");
     GLint vNormals = glGetAttribLocation(textureShader->getProgramID(), "vNormals");
     GLint vUV = glGetAttribLocation(textureShader->getProgramID(), "vUV");
+
+    //light fire datas
+    GLint uAmbientIntensity = glGetUniformLocation(textureShader->getProgramID(),"uAmbientIntensity");
+    GLint uLightColor = glGetUniformLocation(textureShader->getProgramID(),"uLightColor");
+    GLint uLightIntesity = glGetUniformLocation(textureShader->getProgramID(),"uLightIntensity");
+
+    GLint uLightPosition = glGetUniformLocation(textureShader->getProgramID(),"uLightPosition");
+
+    glUniform1f(uAmbientIntensity,ambientIntensity);
+    glUniform3f(uLightColor,lightColor.r,lightColor.g,lightColor.b);
+    glUniform1f(uLightIntesity,lightIntensity);
+
+    glUniform3f(uLightPosition,lightPosition.r,lightPosition.g,lightPosition.b);
+
+    //passing the non projected camera matrix to the shader for light computation
+
+    glm::mat3 convertedCamMatrixNP = glm::inverse(glm::mat3(currentCamera.getViewMatrix()*globalPlacementMatrix));
+
+    GLint uWorldProj33 = glGetAttribLocation(textureShader->getProgramID(), "uWorldProj33");
+    glUniformMatrix4fv(uWorldProj33 , 1 , false , glm::value_ptr(convertedCamMatrixNP));
+
+    GLint uWorldProj = glGetAttribLocation(textureShader->getProgramID(), "uWorldProj");
+    glUniformMatrix4fv(uWorldProj , 1 , false , glm::value_ptr(currentCamera.getViewMatrix()*globalPlacementMatrix));
 
     //selection of datas in the VBOS
     //vertexes
@@ -467,6 +499,7 @@ void Fire::draw(Camera const& currentCamera)
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
+
 
         //figure draw
 

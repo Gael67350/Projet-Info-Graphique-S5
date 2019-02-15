@@ -105,17 +105,19 @@ class Fire
             uint32_t nbVerticesTot;
 
         //variables used for the light simulation
-            glm::vec3 lightPosition;
+            glm::vec4 lightPosition;
             float lightIntensity;
+            float ambientIntensity;
             glm::vec3 lightColor;
+            int fireUpdateCount;
 
     public:
         Fire(glm::mat4 placementMatrix);
         void draw(Camera const& currentCamera);
 
-        std::tuple<glm::vec3,float,glm::vec3> getLightInfo()
+        std::tuple<glm::vec4,float,float,glm::vec3> getLightInfo()
         {
-            return std::tuple<glm::vec3,float,glm::vec3>(lightPosition,lightIntensity,lightColor);
+            return std::tuple<glm::vec4,float,float,glm::vec3>(lightPosition,lightIntensity,ambientIntensity,lightColor);
         }
 
 };
