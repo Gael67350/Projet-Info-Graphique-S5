@@ -53,7 +53,7 @@ FirTree::FirTree(uint32_t nbLatitude) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, firTreeBuffer);
 
-	glBufferData(GL_ARRAY_BUFFER, (3 + 3 + 2) * sizeof(float) * getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (3 + 3 + 2 + 3) * sizeof(float) * getNbVertices(), nullptr, GL_DYNAMIC_DRAW);
 
 	int offset = 0;
 	// Vertices
@@ -72,10 +72,17 @@ FirTree::FirTree(uint32_t nbLatitude) {
 	glBufferSubData(GL_ARRAY_BUFFER, offset, 2 * getNbTrunkVertices() * sizeof(float), &m_trunkUVs[0]);
 	offset += 2 * getNbTrunkVertices() * sizeof(float);
 	glBufferSubData(GL_ARRAY_BUFFER, offset, 2 * getNbLeavesVertices() * sizeof(float), &m_leavesUVs[0]);
+	offset += 2 * getNbLeavesVertices() * sizeof(float);
+
+	// Normals
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 3 * getNbTrunkVertices() * sizeof(float), &m_trunkNormals[0]);
+	offset += 3 * getNbTrunkVertices() * sizeof(float);
+	glBufferSubData(GL_ARRAY_BUFFER, offset, 3 * getNbTrunkVertices() * sizeof(float), &m_leavesNormals[0]);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	m_buffer = firTreeBuffer;
+	m_isInitLight = false;
 }
 
 FirTree::~FirTree() {
@@ -189,6 +196,14 @@ void FirTree::loadTextures() {
 	m_texturesIDs.push_back(firTreeTrunkTextureID);
 }
 
+void FirTree::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float lightIntensity) {
+	m_lightPosition = lightPosition;
+	m_lightColor = lightColor;
+	m_lightIntensity = lightIntensity >= 0 ? lightIntensity : 1.f;
+
+	m_isInitLight = true;
+}
+
 bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
 	float angleRad = 90 * (M_PI / 180.f);
 
@@ -230,6 +245,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	glUseProgram(texturedShader->getProgramID());
 
 	initTexturedShaderData();
+	initLightData(texturedShader, camera);
 
 	uMVP = glGetUniformLocation(texturedShader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
@@ -250,9 +266,11 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	glUseProgram(colorizedShader->getProgramID());
 
 	initColorizedShaderData();
+	initLightData(colorizedShader, camera);
 
 	uMVP = glGetUniformLocation(colorizedShader->getProgramID(), "uMVP");
 	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
+
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
@@ -286,7 +304,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 void FirTree::initColorizedShaderData() {
 	Shader* colorizedShader = m_shaders[0];
 
-	GLint vPosition, vColor;
+	GLint vPosition, vColor, vNormal;
 
 	// Colorized Shader data
 	int offset = 0;
@@ -300,12 +318,18 @@ void FirTree::initColorizedShaderData() {
 	vColor = glGetAttribLocation(colorizedShader->getProgramID(), "vColor");
 	glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vColor);
+
+	offset += (2 + 3) * getNbVertices() * sizeof(float);
+
+	vNormal = glGetAttribLocation(colorizedShader->getProgramID(), "vNormal");
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
+	glEnableVertexAttribArray(vNormal);
 }
 
 void FirTree::initTexturedShaderData() {
 	Shader* texturedShader = m_shaders[1];
 
-	GLint vPosition, vColor, vUV;
+	GLint vPosition, vColor, vUV, vNormal;
 
 	// Textured Shader data
 	int offset = 0;
@@ -325,4 +349,38 @@ void FirTree::initTexturedShaderData() {
 	vUV = glGetAttribLocation(texturedShader->getProgramID(), "vUV");
 	glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vUV);
+
+	offset += 2 * getNbVertices() * sizeof(float);
+
+	vNormal = glGetAttribLocation(texturedShader->getProgramID(), "vNormal");
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
+	glEnableVertexAttribArray(vNormal);
+}
+
+void FirTree::initLightData(Shader* const &shader, Camera const &camera) {
+	GLint uIsLight, uModel, uModelViewMatrix, uInvModelViewMatrix, uLightColor, uLightPosition, uCameraPosition;
+
+	uIsLight = glGetUniformLocation(shader->getProgramID(), "uIsLight");
+	glUniform1i(uIsLight, m_isInitLight);
+
+	if (!m_isInitLight) {
+		return;
+	}
+
+	uModelViewMatrix = glGetUniformLocation(shader->getProgramID(), "uModelViewMatrix");
+	glUniformMatrix4fv(uModelViewMatrix, 1, false, glm::value_ptr(camera.getViewMatrix()));
+
+	uInvModelViewMatrix = glGetUniformLocation(shader->getProgramID(), "uInvModelViewMatrix");
+	glUniformMatrix4fv(uInvModelViewMatrix, 1, true, glm::value_ptr(glm::inverse(camera.getViewMatrix())));
+
+	uLightColor = glGetUniformLocation(shader->getProgramID(), "uLightColor");
+	glUniform3f(uLightColor, m_lightColor.r, m_lightColor.g, m_lightColor.b);
+
+	uLightPosition = glGetUniformLocation(shader->getProgramID(), "uLightPosition");
+	glUniform3f(uLightPosition, m_lightPosition.x, m_lightPosition.y, m_lightPosition.z);
+
+	glm::vec3 cameraPos = camera.getPosition();
+
+	uCameraPosition = glGetUniformLocation(shader->getProgramID(), "uCameraPosition");
+	glUniform3f(uCameraPosition, cameraPos.x, cameraPos.y, cameraPos.z);
 }

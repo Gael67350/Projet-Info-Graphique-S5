@@ -17,6 +17,8 @@ public:
 
 	void loadTextures();
 
+	void initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float lightIntensity);
+
 	bool draw(Camera &camera, glm::vec3 const &position = { 0,0,0 }, float const &scaling = 1.f);
 
 	const float* getVertices() const;
@@ -37,6 +39,8 @@ private:
 
 	void initColorizedShaderData();
 	void initTexturedShaderData();
+	
+	void initLightData(Shader* const &shader, Camera const &camera);
 
 	std::vector<float> m_trunkVertices;
 	std::vector<float> m_trunkNormals;
@@ -53,6 +57,11 @@ private:
 	std::vector<Shader*> m_shaders;
 	std::vector<SDL_Surface*> m_textures;
 	std::vector<GLuint> m_texturesIDs;
+
+	bool m_isInitLight;
+	glm::vec3 m_lightPosition;
+	glm::vec3 m_lightColor;
+	float m_lightIntensity;
 };
 
 #endif
