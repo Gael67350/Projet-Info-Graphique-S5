@@ -4,6 +4,7 @@ precision mediump float; //Medium precision for float. highp and smallp can also
 uniform bool uIsLight;
 uniform vec3 uLightColor;
 uniform vec3 uLightPosition;
+uniform vec4 uMaterials;
 uniform vec3 uCameraPosition;
 
 uniform sampler2D uTexture;
@@ -22,10 +23,10 @@ void main() {
 	textureColor = vec4(textureColor.a, textureColor.b, textureColor.g, textureColor.r);
 	
 	if(uIsLight) {
-		float ambientIntensity = 0.3;
-		float diffuseIntensity = 0.45;
-		float specIntensity = 0.05;
-		float shiny = 128.0;
+		float ambientIntensity = uMaterials.x;
+		float diffuseIntensity = uMaterials.y;
+		float specIntensity = uMaterials.z;
+		float shiny = uMaterials.w;
 		
 		vec3 lightDirection = normalize(uLightPosition - varyPosition.xyz);
 		vec3 cameraDirection = normalize(uCameraPosition - varyPosition.xyz);

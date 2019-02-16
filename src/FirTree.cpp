@@ -200,6 +200,7 @@ void FirTree::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float lig
 	m_lightPosition = lightPosition;
 	m_lightColor = lightColor;
 	m_lightIntensity = lightIntensity >= 0 ? lightIntensity : 1.f;
+	m_materials = glm::vec4(0.3f, 0.45f, 0.05f, 128.f);
 
 	m_isInitLight = true;
 }
@@ -361,7 +362,7 @@ void FirTree::initTexturedShaderData() {
 }
 
 void FirTree::initLightData(Shader* const &shader, Camera const &camera) {
-	GLint uIsLight, uModel, uLightColor, uLightPosition, uCameraPosition;
+	GLint uIsLight, uModel, uLightColor, uLightPosition, uMaterials, uCameraPosition;
 
 	uIsLight = glGetUniformLocation(shader->getProgramID(), "uIsLight");
 	glUniform1i(uIsLight, m_isInitLight);
@@ -375,6 +376,9 @@ void FirTree::initLightData(Shader* const &shader, Camera const &camera) {
 
 	uLightPosition = glGetUniformLocation(shader->getProgramID(), "uLightPosition");
 	glUniform3f(uLightPosition, m_lightPosition.x, m_lightPosition.y, m_lightPosition.z);
+
+	uMaterials = glGetUniformLocation(shader->getProgramID(), "uMaterials");
+	glUniform4f(uMaterials, m_materials.x, m_materials.y, m_materials.z, m_materials.w);
 
 	glm::vec3 cameraPos = camera.getPosition();
 

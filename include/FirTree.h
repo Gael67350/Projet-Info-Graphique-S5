@@ -63,6 +63,7 @@ private:
 	glm::vec3 m_lightPosition;
 	glm::vec3 m_lightColor;
 	float m_lightIntensity;
+	glm::vec4 m_materials; // Ambient strength, Diffuse strength, Specular strength, Shininess
 };
 
 #endif
