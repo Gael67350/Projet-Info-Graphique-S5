@@ -222,9 +222,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	// Build fir tree scene graph
 	std::stack<glm::mat4> matrices;
-	matrices.push(camera.lookAt());
-
-	matrices.push(matrices.top() * trunkModel);
+	matrices.push(trunkModel);
 
 	// Draw trunk
 	Shader* colorizedShader = m_shaders[0];
@@ -237,7 +235,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	glUseProgram(colorizedShader->getProgramID());
 
 	uMVP = glGetUniformLocation(colorizedShader->getProgramID(), "uMVP");
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * matrices.top()));
 
 	glUseProgram(0);
 
@@ -246,9 +244,10 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	initTexturedShaderData();
 	initLightData(texturedShader, camera);
+	initModelViewMatrixData(texturedShader, matrices.top(), camera);
 
 	uMVP = glGetUniformLocation(texturedShader->getProgramID(), "uMVP");
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * matrices.top()));
 
 	uTexture = glGetUniformLocation(texturedShader->getProgramID(), "uTexture");
 	glUniform1i(uTexture, 0);
@@ -267,28 +266,32 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	initColorizedShaderData();
 	initLightData(colorizedShader, camera);
+	initModelViewMatrixData(colorizedShader, matrices.top(), camera);
 
 	uMVP = glGetUniformLocation(colorizedShader->getProgramID(), "uMVP");
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * matrices.top()));
 
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 2nd range of leaves
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
+	initModelViewMatrixData(colorizedShader, matrices.top(), camera);
+
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * matrices.top()));
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
 
 	// Draw 3rd range of leaves
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(matrices.top()));
+	initModelViewMatrixData(colorizedShader, matrices.top(), camera);
+
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * matrices.top()));
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	glUseProgram(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	matrices.pop();
 	matrices.pop();
 	matrices.pop();
 	matrices.pop();
@@ -358,7 +361,7 @@ void FirTree::initTexturedShaderData() {
 }
 
 void FirTree::initLightData(Shader* const &shader, Camera const &camera) {
-	GLint uIsLight, uModel, uModelViewMatrix, uInvModelViewMatrix, uLightColor, uLightPosition, uCameraPosition;
+	GLint uIsLight, uModel, uLightColor, uLightPosition, uCameraPosition;
 
 	uIsLight = glGetUniformLocation(shader->getProgramID(), "uIsLight");
 	glUniform1i(uIsLight, m_isInitLight);
@@ -366,12 +369,6 @@ void FirTree::initLightData(Shader* const &shader, Camera const &camera) {
 	if (!m_isInitLight) {
 		return;
 	}
-
-	uModelViewMatrix = glGetUniformLocation(shader->getProgramID(), "uModelViewMatrix");
-	glUniformMatrix4fv(uModelViewMatrix, 1, false, glm::value_ptr(camera.getViewMatrix()));
-
-	uInvModelViewMatrix = glGetUniformLocation(shader->getProgramID(), "uInvModelViewMatrix");
-	glUniformMatrix4fv(uInvModelViewMatrix, 1, true, glm::value_ptr(glm::inverse(camera.getViewMatrix())));
 
 	uLightColor = glGetUniformLocation(shader->getProgramID(), "uLightColor");
 	glUniform3f(uLightColor, m_lightColor.r, m_lightColor.g, m_lightColor.b);
@@ -383,4 +380,18 @@ void FirTree::initLightData(Shader* const &shader, Camera const &camera) {
 
 	uCameraPosition = glGetUniformLocation(shader->getProgramID(), "uCameraPosition");
 	glUniform3f(uCameraPosition, cameraPos.x, cameraPos.y, cameraPos.z);
+}
+
+void FirTree::initModelViewMatrixData(Shader* const &shader, glm::mat4 const & model, Camera const &camera) {
+	if (!m_isInitLight) {
+		return;
+	}
+
+	GLint uModelViewMatrix, uInvModelViewMatrix;
+
+	uModelViewMatrix = glGetUniformLocation(shader->getProgramID(), "uModelViewMatrix");
+	glUniformMatrix4fv(uModelViewMatrix, 1, false, glm::value_ptr(camera.getViewMatrix() * model));
+
+	uInvModelViewMatrix = glGetUniformLocation(shader->getProgramID(), "uInvModelViewMatrix");
+	glUniformMatrix4fv(uInvModelViewMatrix, 1, true, glm::value_ptr(glm::inverse(camera.getViewMatrix() * model)));
 }

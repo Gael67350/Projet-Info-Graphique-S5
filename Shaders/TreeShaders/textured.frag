@@ -22,16 +22,16 @@ void main() {
 	textureColor = vec4(textureColor.a, textureColor.b, textureColor.g, textureColor.r);
 	
 	if(uIsLight) {
-		float ambientIntensity = 0.5;
-		float diffuseIntensity = 1.0;
-		float specIntensity = 0.1;
-		float shiny = 64.0;
+		float ambientIntensity = 0.3;
+		float diffuseIntensity = 0.45;
+		float specIntensity = 0.05;
+		float shiny = 128.0;
 		
 		vec3 lightDirection = normalize(uLightPosition - varyPosition.xyz);
 		vec3 cameraDirection = normalize(uCameraPosition - varyPosition.xyz);
 		
 		vec3 ambient = ambientIntensity * uLightColor * varyColor.rgb;
-		vec3 diffuse = diffuseIntensity * max(0.0, dot(varyNormal, uLightPosition)) * varyColor.rgb * uLightColor;
+		vec3 diffuse = diffuseIntensity * max(0.0, dot(varyNormal, lightDirection)) * varyColor.rgb * uLightColor;
 		vec3 specular = specIntensity * pow(max(0.0, dot(reflect(-lightDirection, varyNormal), cameraDirection)), shiny) * uLightColor;
 		
 		color = vec4(ambient + diffuse + specular, 1.0);

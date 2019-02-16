@@ -39,8 +39,9 @@ private:
 
 	void initColorizedShaderData();
 	void initTexturedShaderData();
-	
+
 	void initLightData(Shader* const &shader, Camera const &camera);
+	void initModelViewMatrixData(Shader* const &shader, glm::mat4 const & model, Camera const &camera);
 
 	std::vector<float> m_trunkVertices;
 	std::vector<float> m_trunkNormals;
