@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 	glViewport(0, 0, WIDTH, HEIGHT); //Draw on ALL the screen
 
 	//The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
-	glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
+	glClearColor(1.0, 1.0, 1.0, 1.0); //Full White
 
 	//TODO
 	//From here you can load your OpenGL objects, like VBO, Shaders, etc.
@@ -172,11 +172,15 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
+	// Init lights
+	std::tuple<glm::vec3, float, glm::vec3> lightInfo = campFire.getLightInfo();
+	firTree.initLight(std::get<0>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
+
     //setting up the transparency management
     glEnable(GL_DEPTH_TEST); //Activation of the depth test
 
     //enableing transparency
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
