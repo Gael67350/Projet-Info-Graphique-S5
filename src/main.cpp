@@ -216,6 +216,8 @@ int main(int argc, char *argv[]) {
 			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);
 		}
 
+		firTree.updateWind();
+
         //Draw fire
         campFire.draw(camera);
         

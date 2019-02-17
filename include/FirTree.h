@@ -35,7 +35,13 @@ public:
 
 	uint32_t getNbLeavesVertices() const { return m_leavesVertices.size() / 3; }
 
+	void updateWind();
+
 private:
+	static const float WIND_MIN_ANGLE;
+	static const float WIND_MAX_ANGLE;
+	static const float WIND_SPEED;
+	static const float WIND_SPEED_RETURN;
 
 	void initColorizedShaderData();
 	void initTexturedShaderData();
@@ -59,11 +65,14 @@ private:
 	std::vector<SDL_Surface*> m_textures;
 	std::vector<GLuint> m_texturesIDs;
 
-	bool m_isInitLight;
+	bool m_isInitLight = false;
 	glm::vec3 m_lightPosition;
 	glm::vec3 m_lightColor;
 	float m_lightIntensity;
 	glm::vec4 m_materials; // Ambient strength, Diffuse strength, Specular strength, Shininess
+
+	bool m_nextWindDirection = false;
+	float m_nextWindAngle = 0;
 };
 
 #endif
