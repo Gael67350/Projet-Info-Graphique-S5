@@ -398,16 +398,29 @@ void Fire::draw(Camera const& currentCamera)
     GLint uLightColor = glGetUniformLocation(textureShader->getProgramID(),"uLightColor");
     GLint uLightIntesity = glGetUniformLocation(textureShader->getProgramID(),"uLightIntensity");
 
+    //data related with diffuse light
+
     GLint uWorldProj = glGetUniformLocation(textureShader->getProgramID(), "uWorldProj");
     GLint uWorldProjInv = glGetUniformLocation(textureShader->getProgramID(), "uWorldProjInv");
 
     GLint uLightPosition = glGetUniformLocation(textureShader->getProgramID(),"uLightPosition");
 
+    //definition of the parameters related to specular reflection
+
+    GLint uCameraPosition = glGetUniformLocation(textureShader->getProgramID(),"uCameraPosition");
+    GLint specularConstant = glGetUniformLocation(textureShader->getProgramID(),"specularConstant");
+    GLint shine = glGetUniformLocation(textureShader->getProgramID(),"shine");
+
+    //affecting shader variables with the data from light defined in class
     glUniform1f(uAmbientIntensity,ambientIntensity);
     glUniform3fv(uLightColor,1,glm::value_ptr(lightColor));
     glUniform1f(uLightIntesity,lightIntensity);
 
     glUniform3fv(uLightPosition,1,glm::value_ptr(lightPosition));
+
+    glm::vec3 camPos = currentCamera.getPosition();
+
+    glUniform3fv(uCameraPosition,1,glm::value_ptr(camPos));
 
     //selection of datas in the VBOS
     //vertexes
@@ -434,6 +447,10 @@ void Fire::draw(Camera const& currentCamera)
     glm::mat4 preRotation(1.f);
 
     //logs display
+
+    //affecting specular variables specific to the log material
+    glUniform1f(specularConstant,0.3f);
+    glUniform1f(shine,1.0f);
 
     //texture affectation
 
@@ -479,6 +496,10 @@ void Fire::draw(Camera const& currentCamera)
     shapeTransformationMatrix = glm::mat4(1.f);
 
     //begin of the rocks drawing section
+
+    //affecting specular variables specific to the rock material
+    glUniform1f(specularConstant,1.0f);
+    glUniform1f(shine,1.0f);
 
     //texture affectation for the rock
     glActiveTexture(GL_TEXTURE0);

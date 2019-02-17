@@ -13,10 +13,17 @@ uniform float uAmbientIntensity;
 uniform float uLightIntensity;
 uniform vec3 uLightColor;
 
+uniform vec3 specularConstant;
+
+uniform float shine;
+
+uniform vec3 uCameraPosition;
+
 void main()
 {
 
     vec3 lightVector = normalize(uLightPosition - vary_position.xyz);
+    vec3 cameraVector = normalize(uCameraPosition-vary_position.xyz);
 
     vec4 color;
 
@@ -26,9 +33,9 @@ void main()
 
     vec3 ambient = uAmbientIntensity * uLightColor;
     vec3 diffuse = uLightIntensity * max(0.0,dot(vary_normals,lightVector)) * uLightColor;
-    //vec3 specular = vec3(0.0,0.0,0.0);
+    vec3 specular = specularConstant * pow(max(0.0,dot(reflect(-lightVector,vary_normals),cameraVector)),shine);
 
-    color = vec4(ambient+diffuse,1.0);
+    color = vec4(ambient+diffuse+specular,1.0);
 
     gl_FragColor = textureColor*color;
 }
