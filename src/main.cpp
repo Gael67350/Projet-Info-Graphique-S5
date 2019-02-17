@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
 
         //Draw fire
         campFire.draw(camera);
-        
+        /*
         glUseProgram(shader->getProgramID());
         
         glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
@@ -264,7 +264,7 @@ int main(int argc, char *argv[]) {
           
           glBindBuffer(GL_ARRAY_BUFFER, 0);
           
-          glUseProgram(0);
+          glUseProgram(0);*/
     
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
 		SDL_GL_SwapWindow(window);

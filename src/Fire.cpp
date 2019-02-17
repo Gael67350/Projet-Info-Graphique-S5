@@ -366,7 +366,7 @@ Fire::Fire(glm::mat4 placementMatrix):
     initParticleSystem();
 
     //initialisation of light
-    lightPosition = globalPlacementMatrix*glm::vec4(0.0,2.0,0.0,1.0);
+    lightPosition = glm::vec3(glm::translate(globalPlacementMatrix, glm::vec3(0, 1.f, 0))[3]);
     lightIntensity = 1.0;
     ambientIntensity = 0.3;
     fireUpdateCount = 0;
@@ -398,23 +398,16 @@ void Fire::draw(Camera const& currentCamera)
     GLint uLightColor = glGetUniformLocation(textureShader->getProgramID(),"uLightColor");
     GLint uLightIntesity = glGetUniformLocation(textureShader->getProgramID(),"uLightIntensity");
 
+    GLint uWorldProj = glGetUniformLocation(textureShader->getProgramID(), "uWorldProj");
+    GLint uWorldProjInv = glGetUniformLocation(textureShader->getProgramID(), "uWorldProjInv");
+
     GLint uLightPosition = glGetUniformLocation(textureShader->getProgramID(),"uLightPosition");
 
     glUniform1f(uAmbientIntensity,ambientIntensity);
-    glUniform3f(uLightColor,lightColor.r,lightColor.g,lightColor.b);
+    glUniform3fv(uLightColor,1,glm::value_ptr(lightColor));
     glUniform1f(uLightIntesity,lightIntensity);
 
-    glUniform3f(uLightPosition,lightPosition.r,lightPosition.g,lightPosition.b);
-
-    //passing the non projected camera matrix to the shader for light computation
-
-    glm::mat3 convertedCamMatrixNP = glm::inverse(glm::mat3(currentCamera.getViewMatrix()*globalPlacementMatrix));
-
-    GLint uWorldProj33 = glGetAttribLocation(textureShader->getProgramID(), "uWorldProj33");
-    glUniformMatrix4fv(uWorldProj33 , 1 , false , glm::value_ptr(convertedCamMatrixNP));
-
-    GLint uWorldProj = glGetAttribLocation(textureShader->getProgramID(), "uWorldProj");
-    glUniformMatrix4fv(uWorldProj , 1 , false , glm::value_ptr(currentCamera.getViewMatrix()*globalPlacementMatrix));
+    glUniform3fv(uLightPosition,1,glm::value_ptr(lightPosition));
 
     //selection of datas in the VBOS
     //vertexes
@@ -457,18 +450,26 @@ void Fire::draw(Camera const& currentCamera)
 
     for(int i = 0 ;i<9 ; i++ )
     {
-        glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
-        glm::mat4 uMvpMat = currentCamera.lookAt()*globalPlacementMatrix*finalCylinderTranform;
+        glm::mat4 finalCylinderTranform = globalPlacementMatrix*preRotation*shapeTransformationMatrix;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*finalCylinderTranform;
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
+
+        //passing the light render related matrix to the shader
+
+        glUniformMatrix4fv(uWorldProj , 1 , false , glm::value_ptr(currentCamera.getViewMatrix()*finalCylinderTranform));
+        glUniformMatrix4fv(uWorldProjInv , 1 , true , glm::value_ptr(glm::inverse(currentCamera.getViewMatrix()*finalCylinderTranform)));
+
         //figure draw
 
         glDrawArrays(GL_TRIANGLES, 0, log.getNbVertices());
 
+
         //rotation to draw the next log
 
         preRotation = glm::rotate(preRotation,(2.f*3.14f/8.f),glm::vec3(0.f,1.f,0.f));
+
     }
 
     //end of the log drawing section
@@ -494,12 +495,16 @@ void Fire::draw(Camera const& currentCamera)
     for(int i = 0 ;i<=19 ; i++ )
     {
 
-        glm::mat4 finalRockTranform = preRotation*shapeTransformationMatrix;
-        glm::mat4 uMvpMat = currentCamera.lookAt()*globalPlacementMatrix*finalRockTranform;
+        glm::mat4 finalRockTranform = globalPlacementMatrix*preRotation*shapeTransformationMatrix;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*finalRockTranform;
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
 
+        //passing the light render related matrix to the shader
+
+        glUniformMatrix4fv(uWorldProj , 1 , false , glm::value_ptr(currentCamera.getViewMatrix()*finalRockTranform));
+        glUniformMatrix4fv(uWorldProjInv , 1 , true , glm::value_ptr(glm::inverse(currentCamera.getViewMatrix()*finalRockTranform)));
 
         //figure draw
 
