@@ -39,6 +39,7 @@
 #include <time.h>
 #include <cstdlib>
 #include <stack>
+#include <GrassElement.h>
 
 #define WIDTH     800
 #define HEIGHT    600
@@ -87,14 +88,15 @@ int main(int argc, char *argv[]) {
 	//The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
 	glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
 
-	//TODO
-	//From here you can load your OpenGL objects, like VBO, Shaders, etc.
-
 	// Init random
 	srand(time(NULL));
 
 	// Create FirTree
 	FirTree firTree = FirTree(500);
+
+	//creating grass element
+
+	GrassElement Grass = GrassElement();
 
 	// View from world space to camera space
 	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
