@@ -196,11 +196,10 @@ void FirTree::loadTextures() {
 	m_texturesIDs.push_back(firTreeTrunkTextureID);
 }
 
-void FirTree::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float lightIntensity) {
+void FirTree::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength) {
 	m_lightPosition = lightPosition;
 	m_lightColor = lightColor;
-	m_lightIntensity = lightIntensity >= 0 ? lightIntensity : 1.f;
-	m_materials = glm::vec4(0.3f, 0.45f, 0.05f, 128.f);
+	m_materials = glm::vec4(ambientStrength >= 0 ? ambientStrength : 1.f, diffuseStrength >= 0 ? diffuseStrength : 1.f, 0.05f, 128.f);
 
 	m_isInitLight = true;
 }

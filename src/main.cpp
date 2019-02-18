@@ -172,10 +172,6 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
-	// Init lights
-	std::tuple<glm::vec3, float, glm::vec3> lightInfo = campFire.getLightInfo();
-	firTree.initLight(std::get<0>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
-
     //setting up the transparency management
     glEnable(GL_DEPTH_TEST); //Activation of the depth test
 
@@ -210,6 +206,10 @@ int main(int argc, char *argv[]) {
 
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+		// Update lights
+		std::tuple<glm::vec3, float, float, glm::vec3> lightInfo = campFire.getLightInfo();
+		firTree.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
 
 		// Draw forest
 		for (glm::vec3 const &coord : treesCoordinates) {
