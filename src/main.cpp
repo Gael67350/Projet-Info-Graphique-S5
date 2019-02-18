@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 
 	//creating grass element
 
-	GrassElement Grass = GrassElement();
+	GrassElement grass = GrassElement();
 
 	// View from world space to camera space
 	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
@@ -209,13 +209,6 @@ int main(int argc, char *argv[]) {
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		// Draw forest
-		for (glm::vec3 const &coord : treesCoordinates) {
-			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);
-		}
-
-        //Draw fire
-        campFire.draw(camera);
         /*
         glUseProgram(shader->getProgramID());
         
@@ -267,7 +260,17 @@ int main(int argc, char *argv[]) {
           glBindBuffer(GL_ARRAY_BUFFER, 0);
           
           glUseProgram(0);*/
-    
+
+		grass.draw(camera,glm::mat4(1.0f));
+		
+		// Draw forest
+		for (glm::vec3 const &coord : treesCoordinates) {
+			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);
+		}
+
+		//Draw fire
+		campFire.draw(camera);
+
 		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
 		SDL_GL_SwapWindow(window);
 
