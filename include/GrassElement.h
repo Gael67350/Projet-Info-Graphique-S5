@@ -35,7 +35,7 @@ class GrassElement
 
     private:
         Cone grassModel;
-        glm::vec3 color;
+        glm::vec4 color;
 
         GLuint grassBuffer;
 
