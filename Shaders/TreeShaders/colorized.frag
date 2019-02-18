@@ -22,6 +22,9 @@ void main() {
 		float specIntensity = uMaterials.z;
 		float shiny = uMaterials.w;
 		
+		float distance = distance(varyPosition.xyz, uLightPosition);
+		float lightAttenuation = clamp(17.0 / length(distance), 0.0, 1.0);
+		
 		vec3 lightDirection = normalize(uLightPosition - varyPosition.xyz);
 		vec3 cameraDirection = normalize(uCameraPosition - varyPosition.xyz);
 		
@@ -29,7 +32,7 @@ void main() {
 		vec3 diffuse = diffuseIntensity * max(0.0, dot(varyNormal, lightDirection)) * varyColor.rgb * uLightColor;
 		vec3 specular = specIntensity * pow(max(0.0, dot(reflect(-lightDirection, varyNormal), cameraDirection)), shiny) * uLightColor;
 		
-		color = vec4(ambient + diffuse + specular, 1.0);
+		color = vec4(lightAttenuation * (ambient + diffuse + specular), 1.0);
 	}else{
 		color = varyColor;
 	}

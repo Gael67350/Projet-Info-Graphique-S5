@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 	glViewport(0, 0, WIDTH, HEIGHT); //Draw on ALL the screen
 
 	//The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
-	glClearColor(1.0, 1.0, 1.0, 1.0); //Full White
+	glClearColor(0.0, 0.0, 0.0, 1.0); //Full Black
 
 	//TODO
 	//From here you can load your OpenGL objects, like VBO, Shaders, etc.
