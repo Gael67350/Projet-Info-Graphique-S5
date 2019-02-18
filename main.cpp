@@ -212,6 +212,24 @@ int main(int argc, char *argv[])
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable(GL_TEXTURE_2D);
 
+	GLuint rightTexture;
+	glGenTextures(1, &rightTexture);
+	glBindTexture(GL_TEXTURE_2D, rightTexture);
+
+	//loading textures
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgRightRGB->w, imgRightRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgRightRGB->pixels);
+
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
+
 
 	GLuint frontTexture;
 	//rock texture definition
@@ -241,6 +259,20 @@ int main(int argc, char *argv[])
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	GLuint backTexture;
+	//rock texture definition
+	glGenTextures(1, &backTexture);
+	glBindTexture(GL_TEXTURE_2D, backTexture);
+
+	//loading textures
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgBottomRGB->w, imgBottomRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgBottomRGB->pixels);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//two different programs are defined respectively to display colors for the flame
 	//and to display textures on the rocks and logs
@@ -353,9 +385,9 @@ int main(int argc, char *argv[])
 		glUniform1i(uTexture, 0);
 
 		float angle = M_PI / 2.0;
-		glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 5.f));
+		glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, -5, 55.f));
 
-		translateZ= glm::scale(translateZ, glm::vec3(10.f, 10.f, 10.f));
+		translateZ= glm::scale(translateZ, glm::vec3(300.f, 200.f, 200.f));
 		glm::mat4 rotateX = glm::rotate(translateZ, angle, glm::vec3(1.f, 0, 0));
 
 		matrices.push(matrices.top() * rotateX * model);
@@ -366,11 +398,28 @@ int main(int argc, char *argv[])
 
 
 		matrices.pop();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, downTexture);
+		glUniform1i(uTexture, 0);
+		glm::mat4 translateY = glm::translate(glm::mat4(1.f), glm::vec3(0, -55.f, 0.f));
+
+		translateY = glm::scale(translateY, glm::vec3(300.f, 200.f, 200.f));
+		
+
+		matrices.push(matrices.top() * translateY * model);
+		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+		glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
+		glFinish();
+
+
+
+		matrices.pop();
+
 		// glm::mat4 translateX = glm::translate(rotateZ, glm::vec3(0.5f, 0, 0));
-		glm::mat4 translateX = glm::translate(glm::mat4(1.f), glm::vec3(-5.f, 0, 0));
+		glm::mat4 translateX = glm::translate(glm::mat4(1.f), glm::vec3(-55.f, 10, 0));
 		// glm::mat4 rotateZ = glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 0, 1.f));
 
-		translateX = glm::scale(translateX, glm::vec3(10.f, 10.f, 10.f));
+		translateX = glm::scale(translateX, glm::vec3(200.f, 200.f, 200.f));
 		glm::mat4 rotateZ = glm::rotate(translateX, angle, glm::vec3(0, 0, 1.f));
         glm::mat4 rotationCorrect = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.f, 0, 0));
 
@@ -378,7 +427,7 @@ int main(int argc, char *argv[])
 
 		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, leftTexture);
+        glBindTexture(GL_TEXTURE_2D, frontTexture);
         glUniform1i(uTexture, 0);
         glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
 		glFinish();
