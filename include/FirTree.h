@@ -17,7 +17,7 @@ public:
 
 	void loadTextures();
 
-	void initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float lightIntensity);
+	void initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength);
 
 	bool draw(Camera &camera, glm::vec3 const &position = { 0,0,0 }, float const &scaling = 1.f);
 
@@ -62,7 +62,6 @@ private:
 	bool m_isInitLight;
 	glm::vec3 m_lightPosition;
 	glm::vec3 m_lightColor;
-	float m_lightIntensity;
 	glm::vec4 m_materials; // Ambient strength, Diffuse strength, Specular strength, Shininess
 };
 
