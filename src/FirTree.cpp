@@ -209,7 +209,7 @@ void FirTree::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float lig
 	m_isInitLight = true;
 }
 
-bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
+bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scaling, float const &windAngle) {
 	float angleRad = 90 * (M_PI / 180.f);
 
 	glm::mat4 id(1.f);
@@ -283,7 +283,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	// Draw 2nd range of leaves
 	initModelViewMatrixData(colorizedShader, matrices.top(), camera);
 
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * glm::rotate(id, m_nextWindAngle, glm::vec3(0, 0, -1.f)) * matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * glm::rotate(id, windAngle, glm::vec3(0, 0, -1.f)) * matrices.top()));
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
@@ -291,7 +291,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	// Draw 3rd range of leaves
 	initModelViewMatrixData(colorizedShader, matrices.top(), camera);
 
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * glm::rotate(id, 1.25f * m_nextWindAngle, glm::vec3(0, 0, -1.f)) * matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * glm::rotate(id, 1.25f * windAngle, glm::vec3(0, 0, -1.f)) * matrices.top()));
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	glUseProgram(0);
@@ -306,24 +306,6 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	}
 
 	return true;
-}
-
-void FirTree::updateWind() {
-	if (m_nextWindAngle < WIND_MIN_ANGLE) {
-		m_nextWindDirection = !m_nextWindDirection;
-		m_nextWindAngle = WIND_MIN_ANGLE;
-	}
-	else if (m_nextWindAngle > WIND_MAX_ANGLE) {
-		m_nextWindDirection = !m_nextWindDirection;
-		m_nextWindAngle = WIND_MAX_ANGLE;
-	}
-
-	if (m_nextWindDirection) {
-		m_nextWindAngle += WIND_SPEED * (M_PI / 180.f);
-	}
-	else {
-		m_nextWindAngle -= WIND_SPEED_RETURN * (M_PI / 180.f);
-	}
 }
 
 void FirTree::initColorizedShaderData() {
