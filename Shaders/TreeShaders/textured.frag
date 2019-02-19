@@ -29,7 +29,7 @@ void main() {
 		float shiny = uMaterials.w;
 		
 		float distance = distance(varyPosition.xyz, uLightPosition);
-		float lightAttenuation = clamp(17.0 / length(distance), 0.0, 1.0);
+		float lightAttenuation = clamp(18.0 / length(distance), 0.0, 1.0);
 		
 		vec3 lightDirection = normalize(uLightPosition - varyPosition.xyz);
 		vec3 cameraDirection = normalize(uCameraPosition - varyPosition.xyz);
