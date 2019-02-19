@@ -15,6 +15,11 @@
 #include <Cylinder.h>
 #include <Cone.h>
 
+const float FirTree::WIND_MIN_ANGLE = 0;
+const float FirTree::WIND_MAX_ANGLE = 2 * (M_PI / 180.f);
+const float FirTree::WIND_SPEED = 0.018f;
+const float FirTree::WIND_SPEED_RETURN = 0.014f;
+
 FirTree::FirTree(uint32_t nbLatitude) {
 	Cylinder trunk = Cylinder(nbLatitude);
 	Cone leaves = Cone(nbLatitude, 0);
@@ -82,7 +87,6 @@ FirTree::FirTree(uint32_t nbLatitude) {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	m_buffer = firTreeBuffer;
-	m_isInitLight = false;
 }
 
 FirTree::~FirTree() {
@@ -204,7 +208,7 @@ void FirTree::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float amb
 	m_isInitLight = true;
 }
 
-bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
+bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scaling, float const &windAngle) {
 	float angleRad = 90 * (M_PI / 180.f);
 
 	glm::mat4 id(1.f);
@@ -278,7 +282,7 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	// Draw 2nd range of leaves
 	initModelViewMatrixData(colorizedShader, matrices.top(), camera);
 
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * glm::rotate(id, windAngle, glm::vec3(0, 0, -1.f)) * matrices.top()));
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	matrices.push(matrices.top() * leavesUpRangeModel);
@@ -286,13 +290,12 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 	// Draw 3rd range of leaves
 	initModelViewMatrixData(colorizedShader, matrices.top(), camera);
 
-	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(camera.lookAt() * glm::rotate(id, 1.25f * windAngle, glm::vec3(0, 0, -1.f)) * matrices.top()));
 	glDrawArrays(GL_TRIANGLES, getNbTrunkVertices(), getNbLeavesVertices());
 
 	glUseProgram(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	matrices.pop();
 	matrices.pop();
 	matrices.pop();
 	matrices.pop();
