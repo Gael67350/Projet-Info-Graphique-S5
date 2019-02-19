@@ -9,6 +9,11 @@
 
 class FirTree {
 public:
+	static const float WIND_MIN_ANGLE;
+	static const float WIND_MAX_ANGLE;
+	static const float WIND_SPEED;
+	static const float WIND_SPEED_RETURN;
+
 	FirTree(uint32_t nbLatitude = 50);
 
 	~FirTree();
@@ -19,7 +24,7 @@ public:
 
 	void initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength);
 
-	bool draw(Camera &camera, glm::vec3 const &position = { 0,0,0 }, float const &scaling = 1.f);
+	bool draw(Camera &camera, glm::vec3 const &position = { 0,0,0 }, float const &scaling = 1.f, float const &windAngle = 0);
 
 	const float* getVertices() const;
 
@@ -36,7 +41,6 @@ public:
 	uint32_t getNbLeavesVertices() const { return m_leavesVertices.size() / 3; }
 
 private:
-
 	void initColorizedShaderData();
 	void initTexturedShaderData();
 
@@ -59,7 +63,7 @@ private:
 	std::vector<SDL_Surface*> m_textures;
 	std::vector<GLuint> m_texturesIDs;
 
-	bool m_isInitLight;
+	bool m_isInitLight = false;
 	glm::vec3 m_lightPosition;
 	glm::vec3 m_lightColor;
 	glm::vec4 m_materials; // Ambient strength, Diffuse strength, Specular strength, Shininess
