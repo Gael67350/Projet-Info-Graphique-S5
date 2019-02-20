@@ -100,8 +100,7 @@ int main(int argc, char *argv[])
 
 	// View from world space to camera space
 	Camera camera = Camera((float) WIDTH / HEIGHT, 110.f);
-	//camera.setPosition(glm::vec3(0, 5.f, -12.f));
-	camera.setPosition(glm::vec3(-5.f, 5.f, -1.f));
+	camera.setPosition(glm::vec3(0, 4.f, -12.f));
 
 	// Generate trees coordinates
 	size_t nbFirTrees = 200;
@@ -201,7 +200,7 @@ int main(int argc, char *argv[])
 
 
 		// Draw environnement
-		environement.draw(camera);
+		environement.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
 
 		//redefinition of the vars passed to the shader
 		//to bind it on the right program

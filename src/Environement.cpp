@@ -26,10 +26,10 @@ Environement::Environement() {
 	glBindBuffer(GL_ARRAY_BUFFER, environementBuffer);
 	glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3 + 2) * sizeof(float), NULL, GL_DYNAMIC_DRAW);
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * cube.getNbVertices(), cube.getVertices());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * cube.getNbVertices(), cube.getVertices());
 	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
 	glBufferSubData(GL_ARRAY_BUFFER, 6 * sizeof(float) * cube.getNbVertices(), 2 * sizeof(float) * cube.getNbVertices(), cube.getUVs());
-	
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	m_buffer = environementBuffer;
@@ -75,7 +75,7 @@ void Environement::loadTextures() {
 
 	GLuint frontTextureID;
 	glGenTextures(1, &frontTextureID);
-	glBindTexture(GL_TEXTURE_2D, frontTextureID); 
+	glBindTexture(GL_TEXTURE_2D, frontTextureID);
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -84,15 +84,14 @@ void Environement::loadTextures() {
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgFrontRGB->w, imgFrontRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgFrontRGB->pixels);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDisable(GL_TEXTURE_2D);
 	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
 
 	GLuint downTextureID;
 	glGenTextures(1, &downTextureID);
-	glBindTexture(GL_TEXTURE_2D, downTextureID); 
+	glBindTexture(GL_TEXTURE_2D, downTextureID);
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -101,9 +100,10 @@ void Environement::loadTextures() {
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgDownRGB->w, imgDownRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgDownRGB->pixels);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDisable(GL_TEXTURE_2D);
 	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
 
 	m_textures.push_back(imgFrontRGB);
 	m_textures.push_back(imgDownRGB);
@@ -136,15 +136,14 @@ bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &
 
 	glm::mat4 leftModel = translateX * scaleZ * rotateZ;
 
+	GLint uMVP = glGetUniformLocation(m_texturedShader->getProgramID(), "uMvp");
+	GLint uTexture = glGetAttribLocation(m_texturedShader->getProgramID(), "uTexture");
+
 	// Build scene graph
 	std::stack<glm::mat4> matrices;
 	matrices.push(camera.lookAt());
 
 	matrices.push(matrices.top() * environementModel);
-
-	GLint uMVP, uTexture;
-
-	uTexture = glGetAttribLocation(m_texturedShader->getProgramID(), "uTexture");
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
 
@@ -152,37 +151,32 @@ bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &
 
 	initTexturedShaderData();
 
+	matrices.push(matrices.top() * backgroundModel);
+
+	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texturesIDs[0]);
 	glUniform1i(uTexture, 0);
-
-	matrices.push(matrices.top() * backgroundModel);
-
-	uMVP = glGetUniformLocation(m_texturedShader->getProgramID(), "uMvp");
-	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
 	glDrawArrays(GL_TRIANGLES, 0, getNbVertices());
 
 	matrices.pop();
-	
+
 	matrices.push(matrices.top() * leftModel);
 
 	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+
 	glDrawArrays(GL_TRIANGLES, 0, getNbVertices());
 
-	glFinish();
-
 	matrices.pop();
+	matrices.push(matrices.top() * floorModel);
+
+	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texturesIDs[1]);
 	glUniform1i(uTexture, 0);
-
-	matrices.push(matrices.top() * floorModel);
-
-	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
 	glDrawArrays(GL_TRIANGLES, 0, getNbVertices());
-
-	glFinish();
 
 	matrices.pop();
 
@@ -214,7 +208,7 @@ void Environement::initTexturedShaderData() {
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vNormal);
 
-	offset += 2 * getNbVertices() * sizeof(float);
+	offset += 3 * getNbVertices() * sizeof(float);
 
 	vUV = glGetAttribLocation(m_texturedShader->getProgramID(), "vUV");
 	glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
