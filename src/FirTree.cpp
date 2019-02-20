@@ -16,7 +16,7 @@
 #include <Cone.h>
 
 const float FirTree::WIND_MIN_ANGLE = 0;
-const float FirTree::WIND_MAX_ANGLE = 2 * (M_PI / 180.f);
+const float FirTree::WIND_MAX_ANGLE = 2.25 * (M_PI / 180.f);
 const float FirTree::WIND_SPEED = 0.018f;
 const float FirTree::WIND_SPEED_RETURN = 0.014f;
 
@@ -215,13 +215,13 @@ bool FirTree::draw(Camera &camera, glm::vec3 const &position, float const &scali
 
 	// Trunk transformations
 	glm::mat4 trunkRotation = glm::rotate(id, -angleRad, glm::vec3(1.f, 0, 0));
-	glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(scaling * 0.75f, scaling * 0.75f, scaling * 4.f));
+	glm::mat4 trunkScaling = glm::scale(trunkRotation, glm::vec3(scaling * 0.75f, scaling * 0.75f, scaling * 3.5f));
 	glm::mat4 trunkModel = glm::translate(trunkScaling, glm::vec3(-position.x, -position.z, position.y));
 
 	// Leaves transformations
-	glm::mat4 leavesScaling = glm::scale(id, glm::vec3(3.75f, 3.75f, 0.75f));
+	glm::mat4 leavesScaling = glm::scale(id, glm::vec3(3.75f, 3.75f, 1.25f));
 
-	glm::mat4 leavesBaseRangeModel = glm::translate(leavesScaling, glm::vec3(0, 0, 0.2f));
+	glm::mat4 leavesBaseRangeModel = glm::translate(leavesScaling, glm::vec3(0, 0, 0.35f));
 	glm::mat4 leavesUpRangeModel = glm::translate(id, glm::vec3(0, 0, 0.33f)) * glm::scale(id, glm::vec3(0.89f, 1.f, 0.89f));
 
 	// Build fir tree scene graph
