@@ -110,6 +110,12 @@ int main(int argc, char *argv[]) {
 
 	std::vector<glm::vec3> treesCoordinates;
 
+    // Generate trees coordinates
+	float maxRadiusGrass = 2.9, minRadiusGrass = 1.8, nbSliceGrass = 4;
+    size_t nbGrass = 35;
+
+    std::vector<glm::vec3> grassCoordinates;
+
 	for (float radius = minRadius; radius <= maxRadius; radius += (maxRadius - minRadius) / nbSlice) {
 		if (nbDrawnTrees > nbFirTrees) {
 			break;
@@ -129,7 +135,41 @@ int main(int argc, char *argv[]) {
 			float x = (radius * randOffsetX) * cos(theta);
 			float z = (radius * randOffsetZ) * sin(theta);
 
-			treesCoordinates.push_back(glm::vec3(x, 0, z));
+			glm::vec3 currentVec = glm::vec3(x, 0, z);
+
+			treesCoordinates.push_back(currentVec);
+
+            size_t nbDrawnGrass = 0;
+
+            if(radius < minRadius+3*((maxRadius - minRadius) / nbSlice))
+            {
+                //generating grass elements arround trees
+                for (float radiusC = minRadiusGrass;
+                     radiusC <= maxRadiusGrass; radiusC += (maxRadiusGrass - minRadiusGrass) / nbSliceGrass) {
+                    if (nbDrawnGrass >= nbGrass) {
+                        break;
+                    }
+
+                    for (double thetaC = 0; thetaC <= 2*M_PI; thetaC += (2*M_PI * nbSliceGrass) / nbGrass) {
+                        if (nbDrawnGrass >= nbGrass) {
+                            break;
+                        }
+
+                        float randOffsetXC = (float) (rand() % 2 + 1);
+                        float randOffsetZC = (float) (rand() % 2 + 1);
+
+                        if (randOffsetXC > 1.6) { randOffsetXC = 1.6f; }
+                        if (randOffsetZC > 1.6) { randOffsetZC = 1.6f; }
+
+                        float xC = (radiusC * randOffsetXC) * cos(thetaC);
+                        float zC = (radiusC * randOffsetZC) * sin(thetaC);
+
+                        grassCoordinates.push_back(glm::vec3(xC, 0, zC) + currentVec);
+
+                        nbDrawnGrass++;
+                    }
+                }
+            }
 
 			nbDrawnTrees++;
 		}
@@ -261,8 +301,13 @@ int main(int argc, char *argv[]) {
           
           glUseProgram(0);*/
 
-		grass.draw(camera,glm::mat4(1.0f));
-		
+
+        //Draw grass
+        for (glm::vec3 const &coord : grassCoordinates)
+        {
+            grass.draw(camera,glm::vec3(coord.x, coord.y, coord.z));
+        }
+
 		// Draw forest
 		for (glm::vec3 const &coord : treesCoordinates) {
 			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);

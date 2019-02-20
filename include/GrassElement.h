@@ -46,7 +46,7 @@ class GrassElement
 
 public:
     GrassElement();
-    void draw(Camera const& currentCamera,glm::mat4 globalDiplacementMatrix);
+    void draw(Camera const& currentCamera,glm::vec3 const& displacementVector);
 };
 
 
