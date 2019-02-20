@@ -26,26 +26,28 @@
 #include "Cone.h"
 #include "Camera.h"
 
+#include<tuple>
+
 #define INDICE_TO_PTR(x) ((void*)(x))
 
-class GrassElement
-{
+class GrassElement {
 
-    private:
-        Cone grassModel;
-        glm::vec4 color;
+private:
+    Cone grassModel;
+    glm::vec4 color;
 
-        GLuint grassBuffer;
+    GLuint grassBuffer;
 
-        Shader* colorShader;
+    Shader *colorShader;
 
-        void initBuffer();
-        void initShaders();
+    void initBuffer();
+
+    void initShaders();
 
 public:
     GrassElement();
-    void draw(Camera const& currentCamera,glm::vec3 const& displacementVector);
-};
 
+    void draw(Camera const &currentCamera, glm::vec3 const &displacementVector,std::tuple<glm::vec3, float, float, glm::vec3> lightData);
+};
 
 #endif //GRAPHICS_SQUELETTE_GRASSELEMENT_H
