@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 
     // Generate trees coordinates
 	float maxRadiusGrass = 2.9, minRadiusGrass = 1.8, nbSliceGrass = 4;
-    size_t nbGrass = 35;
+    size_t nbGrass = 15;
 
     std::vector<glm::vec3> grassCoordinates;
 
