@@ -92,7 +92,7 @@ void GrassElement::draw(Camera const& currentCamera,glm::vec3 const& displacemen
     glm::mat4 uMvpMat(1.f);
     glm::mat4 globalPlacementMatrix(1.f);
 
-    uMvpMat = glm::scale(uMvpMat,glm::vec3(0.3f,1.8f,0.3f));
+    uMvpMat = glm::scale(uMvpMat,glm::vec3(0.25f,1.6f,0.25f));
     uMvpMat = glm::rotate(uMvpMat,-3.14f/2.f,glm::vec3(1.0f,0.0f,0.0f));
 
     //invert scale of the matrix to compensate the model's shink
@@ -123,7 +123,7 @@ void GrassElement::draw(Camera const& currentCamera,glm::vec3 const& displacemen
 
 GrassElement::GrassElement():
 grassModel{Cone(50,0.0f)},
-color{glm::vec4(0.090f, 0.733f, 0.f,1.0f)}
+color{glm::vec4(0.176f, 0.584f, 0.f,1.0f)}
 {
     initBuffer();
     initShaders();
