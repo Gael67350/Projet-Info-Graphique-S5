@@ -254,7 +254,7 @@ int main(int argc, char *argv[]) {
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-   /* glUseProgram(shader->getProgramID());
+      glUseProgram(shader->getProgramID());
 
 		glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
 
@@ -304,7 +304,7 @@ int main(int argc, char *argv[]) {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glUseProgram(0);
-*/
+
      //Draw grass
      for (glm::vec3 const &coord : grassCoordinates)
      {
