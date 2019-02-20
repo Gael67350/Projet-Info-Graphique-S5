@@ -42,8 +42,8 @@
 #include <GrassElement.h>
 #include <cmath>
 
-#define WIDTH     1600
-#define HEIGHT    900
+#define WIDTH     800
+#define HEIGHT    600
 #define FRAMERATE 60
 #define TIME_PER_FRAME_MS  (1.0f/FRAMERATE * 1e3)
 
@@ -192,6 +192,7 @@ int main(int argc, char *argv[]) {
 	glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
 	fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.9f, 0.9f, 0.9f));
 	fireModificationMatrix = glm::translate(fireModificationMatrix, glm::vec3(-0.3f, 0.f, -7.f));
+
 	Fire campFire(fireModificationMatrix);
 
 	// Create environnement
@@ -253,7 +254,7 @@ int main(int argc, char *argv[]) {
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(shader->getProgramID());
+      glUseProgram(shader->getProgramID());
 
 		glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
 
@@ -307,7 +308,7 @@ int main(int argc, char *argv[]) {
      //Draw grass
      for (glm::vec3 const &coord : grassCoordinates)
      {
-         grass.draw(camera,glm::vec3(coord.x, coord.y, coord.z));
+         grass.draw(camera,glm::vec3(coord.x, coord.y, coord.z) , campFire.getLightInfo());
      }
 
 		// Update lights

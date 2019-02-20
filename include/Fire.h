@@ -36,8 +36,6 @@
 #include <chrono>
 #include <tuple>
 
-#define WIDTH     800
-#define HEIGHT    600
 #define INDICE_TO_PTR(x) ((void*)(x))
 
 class Fire
