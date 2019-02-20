@@ -40,9 +40,10 @@
 #include <cstdlib>
 #include <stack>
 #include <GrassElement.h>
+#include <cmath>
 
-#define WIDTH     800
-#define HEIGHT    600
+#define WIDTH     1600
+#define HEIGHT    900
 #define FRAMERATE 60
 #define TIME_PER_FRAME_MS  (1.0f/FRAMERATE * 1e3)
 
@@ -62,7 +63,6 @@ int main(int argc, char *argv[]) {
 		ERROR("Could not load SDL2_image with JPG files\n");
 		return EXIT_FAILURE;
 	}
-
 
 	//Create a Window
 	SDL_Window *window = SDL_CreateWindow("VR Camera",                           //Titre
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 	glViewport(0, 0, WIDTH, HEIGHT); //Draw on ALL the screen
 
 	//The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
-	glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
+	glClearColor(0.0, 0.0, 0.0, 1.0); //Full Black
 
 	// Init random
 	srand(time(NULL));
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 
 	// View from world space to camera space
 	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
-	camera.setPosition(glm::vec3(0, 5.f, -12.f));
+	camera.setPosition(glm::vec3(0.f, 5.f, -12.f));
 
 	// Generate trees coordinates
 	size_t nbFirTrees = 200;
@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
 	float maxRadius = 42, minRadius = 10, nbSlice = 10;
 
 	std::vector<glm::vec3> treesCoordinates;
+	std::vector<std::pair<float, bool>> treesWindData;
 
     // Generate trees coordinates
 	float maxRadiusGrass = 2.5, minRadiusGrass = 1.8, nbSliceGrass = 2;
@@ -134,10 +135,14 @@ int main(int argc, char *argv[]) {
 
 			float x = (radius * randOffsetX) * cos(theta);
 			float z = (radius * randOffsetZ) * sin(theta);
-
+      
 			glm::vec3 currentVec = glm::vec3(x, 0, z);
 
 			treesCoordinates.push_back(currentVec);
+      
+      	float windAngle = (float(rand()) / (float)RAND_MAX) * (FirTree::WIND_MAX_ANGLE - FirTree::WIND_MIN_ANGLE) + FirTree::WIND_MIN_ANGLE;
+
+			treesWindData.push_back(std::make_pair(windAngle, false));
 
             size_t nbDrawnGrass = 0;
 
@@ -183,44 +188,43 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	//loading Fire and it's global modification matrix modification
+	glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
+	fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.9f, 0.9f, 0.9f));
+	fireModificationMatrix = glm::translate(fireModificationMatrix, glm::vec3(-0.3f, 0.f, -7.f));
+	Fire campFire(fireModificationMatrix);
 
-    //loading Fire and it's global modification matrix modification
-    glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
-    fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.9f,0.9f,0.9f));
-	fireModificationMatrix = glm::translate(fireModificationMatrix,glm::vec3(-0.3f,0.f,-7.f));
-    Fire campFire(fireModificationMatrix);
-    
-    // Create environnement
-    Cube cube;
+	// Create environnement
+	Cube cube;
 
-    GLuint myBuffer;
-    glGenBuffers(1, &myBuffer);
+	GLuint myBuffer;
+	glGenBuffers(1, &myBuffer);
 
-      glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
-      glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3)*sizeof(float), NULL, GL_DYNAMIC_DRAW);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * cube.getNbVertices(), cube.getVertices());
-      glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
+	glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3) * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * cube.getNbVertices(), cube.getVertices());
+	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    //Camera
-    glm::mat4 projection = glm::perspective(glm::radians(110.f), (float) WIDTH / HEIGHT, 0.1f, 100.f);
-    glm::mat4 view = glm::lookAt(glm::vec3(1.f, 1.f, -1.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
-    glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 0.01f, 1.f));
+	//Camera
+	glm::mat4 projection = glm::perspective(glm::radians(110.f), (float)WIDTH / HEIGHT, 0.1f, 100.f);
+	glm::mat4 view = glm::lookAt(glm::vec3(1.f, 1.f, -1.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
+	glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 0.01f, 1.f));
 
-    Shader* shader = Shader::loadFromFiles(fopen("Shaders/color.vert", "r"), fopen("Shaders/color.frag", "r"));
-    if (!shader)
-    {
-      std::cerr << "Could not compile Shader... exiting" << std::endl;
-      return EXIT_FAILURE;
-    }
+	Shader* shader = Shader::loadFromFiles(fopen("Shaders/color.vert", "r"), fopen("Shaders/color.frag", "r"));
+	if (!shader)
+	{
+		std::cerr << "Could not compile Shader... exiting" << std::endl;
+		return EXIT_FAILURE;
+	}
 
     //setting up the transparency management
     glEnable(GL_DEPTH_TEST); //Activation of the depth test
 
-    //enableing transparency
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//enableing transparency
+	//glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	bool isOpened = true;
 
@@ -249,68 +253,90 @@ int main(int argc, char *argv[]) {
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-        /*
-        glUseProgram(shader->getProgramID());
-        
-        glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
+    glUseProgram(shader->getProgramID());
 
-          GLint vPosition = glGetAttribLocation(shader->getProgramID(), "vPosition");
-          glVertexAttribPointer(vPosition, 3, GL_FLOAT, 0, 0, 0);
-          glEnableVertexAttribArray(vPosition);
+		glBindBuffer(GL_ARRAY_BUFFER, myBuffer);
 
-          GLint vNormal = glGetAttribLocation(shader->getProgramID(), "vNormal");
-          glVertexAttribPointer(vNormal, 3, GL_FLOAT, 0, 0, INDICE_TO_PTR(3 * cube.getNbVertices() * sizeof(float)));
-          glEnableVertexAttribArray(vNormal);
-          
-          std::stack<glm::mat4> matrices;
-          matrices.push(projection * view); // Camera matrix
+		GLint vPosition = glGetAttribLocation(shader->getProgramID(), "vPosition");
+		glVertexAttribPointer(vPosition, 3, GL_FLOAT, 0, 0, 0);
+		glEnableVertexAttribArray(vPosition);
 
-          matrices.push(matrices.top() * model);
+		GLint vNormal = glGetAttribLocation(shader->getProgramID(), "vNormal");
+		glVertexAttribPointer(vNormal, 3, GL_FLOAT, 0, 0, INDICE_TO_PTR(3 * cube.getNbVertices() * sizeof(float)));
+		glEnableVertexAttribArray(vNormal);
 
-          GLint v = glGetUniformLocation(shader->getProgramID(), "uMVP");
-          glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
-          glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
-          glFinish();
-          matrices.pop();
+		std::stack<glm::mat4> matrices;
+		matrices.push(projection * view); // Camera matrix
 
-          float angle = M_PI / 2.0;
-          glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.5f));
-          glm::mat4 rotateX = glm::rotate(translateZ, angle, glm::vec3(1.f, 0, 0));
+		matrices.push(matrices.top() * model);
 
-          matrices.push(matrices.top() * rotateX * model);
-          glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
-          glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
-          glFinish();
-          matrices.pop();
-          // glm::mat4 translateX = glm::translate(rotateZ, glm::vec3(0.5f, 0, 0));
-          glm::mat4 translateX = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0, 0));
-         // glm::mat4 rotateZ = glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 0, 1.f));
-          
-          glm::mat4 rotateZ = glm::rotate(translateX, angle, glm::vec3(0, 0, 1.f));
+		GLint v = glGetUniformLocation(shader->getProgramID(), "uMVP");
+		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+		glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
+		glFinish();
+		matrices.pop();
 
-          matrices.push(matrices.top() * rotateZ* model);
+		float angle = M_PI / 2.0;
+		glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.5f));
+		glm::mat4 rotateX = glm::rotate(translateZ, angle, glm::vec3(1.f, 0, 0));
 
-          glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
-          glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
-          glFinish();
-          matrices.pop();
+		matrices.push(matrices.top() * rotateX * model);
+		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+		glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
+		glFinish();
+		matrices.pop();
+		// glm::mat4 translateX = glm::translate(rotateZ, glm::vec3(0.5f, 0, 0));
+		glm::mat4 translateX = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0, 0));
+		// glm::mat4 rotateZ = glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 0, 1.f));
 
-          matrices.pop(); 
-          
-          glBindBuffer(GL_ARRAY_BUFFER, 0);
-          
-          glUseProgram(0);*/
+		glm::mat4 rotateZ = glm::rotate(translateX, angle, glm::vec3(0, 0, 1.f));
 
+		matrices.push(matrices.top() * rotateZ* model);
 
-        //Draw grass
-        for (glm::vec3 const &coord : grassCoordinates)
-        {
-            grass.draw(camera,glm::vec3(coord.x, coord.y, coord.z));
-        }
+		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+		glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
+		glFinish();
+		matrices.pop();
+
+		matrices.pop();
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glUseProgram(0);
+
+     //Draw grass
+     for (glm::vec3 const &coord : grassCoordinates)
+     {
+         grass.draw(camera,glm::vec3(coord.x, coord.y, coord.z));
+     }
+
+		// Update lights
+		std::tuple<glm::vec3, float, float, glm::vec3> lightInfo = campFire.getLightInfo();
+		firTree.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
 
 		// Draw forest
-		for (glm::vec3 const &coord : treesCoordinates) {
-			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);
+		for (int i = 0; i < treesCoordinates.size(); i++) {
+			glm::vec3 coord = treesCoordinates.at(i);
+			std::pair<float, bool> &windData = treesWindData.at(i);
+
+			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f, windData.first);
+
+			if (windData.first < FirTree::WIND_MIN_ANGLE) {
+				windData.second = !windData.second;
+				windData.first = FirTree::WIND_MIN_ANGLE;
+			}
+			else if (windData.first > FirTree::WIND_MAX_ANGLE) {
+				windData.second = !windData.second;
+				windData.first = FirTree::WIND_MAX_ANGLE;
+			}
+
+			if (windData.second) {
+				windData.first += FirTree::WIND_SPEED * (M_PI / 180.f);
+			}
+			else {
+				windData.first -= FirTree::WIND_SPEED_RETURN * (M_PI / 180.f);
+			}
+
 		}
 
 		//Draw fire
@@ -329,9 +355,9 @@ int main(int argc, char *argv[]) {
 
 	//Free
 	glUseProgram(0);
-  
-  delete shader;
-  glDeleteBuffers(1, &myBuffer);
+
+	delete shader;
+	glDeleteBuffers(1, &myBuffer);
 
 	//Free everything
 	if (context != NULL)
