@@ -4,8 +4,8 @@ precision mediump float;
 attribute vec3 vPosition;
 uniform mat4 uMvp;
 
-//uvValues
-attribute vec2 vUV;
+//normal data as it is in the vbo data
+attribute vec3 vNormals;
 
 //Color information for fragment shader
 uniform vec4 uColor;

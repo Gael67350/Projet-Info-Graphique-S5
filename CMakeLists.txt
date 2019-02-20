@@ -108,7 +108,7 @@ file(GLOB_RECURSE HEADERS include/*.h include/*.hpp)
 
 #TODO add the library path here
 link_directories(${SDL2_LIBRARY_PATH} ${GLEW_LIBRARY_PATH} ${SDL2_IMAGE_LIBRARY_PATH})
-add_executable(Graphics_Squelette ${SRCS} ${HEADERS} include/Fire.h src/Fire.cpp)
+add_executable(Graphics_Squelette ${SRCS} ${HEADERS} include/Fire.h src/Fire.cpp src/GrassElement.cpp include/GrassElement.h)
 target_compile_definitions(Graphics_Squelette PUBLIC _USE_MATH_DEFINES)
 
 #TODO add another -I parameter (include directory to take account to) and a -l parameter (libraries to link to)
@@ -253,27 +253,6 @@ foreach(srcfile ${SHADERRESOURCES})
         COMMENT "Generating ${relpath}"
         VERBATIM
         )
-endforeach(srcfile)
-
-#addition of others Shaders files
-file(GLOB SHADERRESOURCES
-        Shaders/FireShaders/*)
-foreach(srcfile ${SHADERRESOURCES})
-    get_filename_component(dirname  "${srcfile}" DIRECTORY)
-    get_filename_component(filename "${srcfile}" NAME)
-    file(RELATIVE_PATH relpath "${CMAKE_CURRENT_SOURCE_DIR}" "${srcfile}")
-    file(RELATIVE_PATH dirrelpath "${CMAKE_CURRENT_SOURCE_DIR}" "${dirname}")
-
-    set(ShadersOutput ${ShadersOutput} "${relpath}")
-
-    add_custom_command(
-            OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${relpath}"
-            DEPENDS ${relpath}
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}"
-            COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${relpath}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}/${filename}"
-            COMMENT "Generating ${relpath}"
-            VERBATIM
-    )
 endforeach(srcfile)
 
 #copy of the project texture ressources to the bin path

@@ -93,14 +93,6 @@ class Fire
         //definition of the global placement matrix
             glm::mat4 globalPlacementMatrix;
 
-        //private separated functions for clarity
-            void initBuffer();
-            void initShaders();
-            void initTextures();
-            void initParticleSystem();
-
-            void updateFlame();
-
         //useful data
             uint32_t nbVerticesTot;
 
@@ -110,6 +102,15 @@ class Fire
             float ambientIntensity;
             glm::vec3 lightColor;
             int fireUpdateCount;
+
+        //private separated functions for clarity
+            void initBuffer();
+            void initShaders();
+            void initTextures();
+            void initParticleSystem();
+
+        void updateFlame();
+
 
     public:
         Fire(glm::mat4 placementMatrix);
