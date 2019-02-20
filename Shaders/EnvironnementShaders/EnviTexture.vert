@@ -5,7 +5,7 @@ attribute vec3 vPosition;
 uniform mat4 uMvp;
 
 //normals
-attribute vec3 vNormals;
+attribute vec3 vNormal;
 
 //uvValues
 attribute vec2 vUV;

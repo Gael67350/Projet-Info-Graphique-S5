@@ -29,6 +29,7 @@
 // Geometry
 #include <Geometry.h>
 #include <FirTree.h>
+#include <Environement.h>
 
 // Camera
 #include <Camera.h>
@@ -91,12 +92,16 @@ int main(int argc, char *argv[])
 	// Init random
 	srand(time(NULL));
 
+	// Create Environement
+	Environement environement = Environement();
+
 	// Create FirTree
 	FirTree firTree = FirTree(500);
 
 	// View from world space to camera space
 	Camera camera = Camera((float) WIDTH / HEIGHT, 110.f);
-	camera.setPosition(glm::vec3(0, 5.f, -12.f));
+	//camera.setPosition(glm::vec3(0, 5.f, -12.f));
+	camera.setPosition(glm::vec3(-5.f, 5.f, -1.f));
 
 	// Generate trees coordinates
 	size_t nbFirTrees = 200;
@@ -133,12 +138,16 @@ int main(int argc, char *argv[])
 
 	// Load textures
 	firTree.loadTextures();
+	environement.loadTextures();
 
 	// Load Shaders
 	if (!firTree.loadShaders()) {
 		return EXIT_FAILURE;
 	}
 
+	if (!environement.loadShaders()) {
+		return EXIT_FAILURE;
+	}
 
 	//loading Fire and it's global modification matrix modification
 	glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
@@ -154,128 +163,11 @@ int main(int argc, char *argv[])
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
-	// Create environnement
-	Cube cube = Cube();
-
 	if (!(IMG_Init(IMG_INIT_JPG)&IMG_INIT_JPG))
 	{
 		ERROR("could not load SDL2_image with JPG files \n");
 		throw EXIT_FAILURE;
 	}
-
-
-	SDL_Surface* imgleft = IMG_Load("Ressources/left.jpg");
-	SDL_Surface* imgRight = IMG_Load("Ressources/right.jpg");
-	SDL_Surface* imgFront = IMG_Load("Ressources/front.jpg");
-	SDL_Surface* imgBottom = IMG_Load("Ressources/back.jpg");
-	SDL_Surface* imgDown = IMG_Load("Ressources/down.jpg");
-	SDL_Surface* imgUp = IMG_Load("Ressources/up.jpg");
-
-
-	SDL_Surface* imgLeftRGB = SDL_ConvertSurfaceFormat(imgleft, SDL_PIXELFORMAT_RGBA8888, 0);
-
-	SDL_Surface* imgRightRGB = SDL_ConvertSurfaceFormat(imgRight, SDL_PIXELFORMAT_RGBA8888, 0);
-
-	SDL_Surface* imgFrontRGB = SDL_ConvertSurfaceFormat(imgFront, SDL_PIXELFORMAT_RGBA8888, 0);
-
-	SDL_Surface* imgBottomRGB = SDL_ConvertSurfaceFormat(imgBottom, SDL_PIXELFORMAT_RGBA8888, 0);
-
-	SDL_Surface* imgDownRGB = SDL_ConvertSurfaceFormat(imgDown, SDL_PIXELFORMAT_RGBA8888, 0);
-
-	SDL_Surface* imgUpRGB = SDL_ConvertSurfaceFormat(imgUp, SDL_PIXELFORMAT_RGBA8888, 0);
-	//SDL_Surface* rockRGB = SDL_ConvertSurfaceFormat(imgRock, SDL_PIXELFORMAT_RGBA8888, 0);
-
-	SDL_FreeSurface(imgleft);
-	SDL_FreeSurface(imgRight);
-	SDL_FreeSurface(imgFront);
-	SDL_FreeSurface(imgBottom);
-	SDL_FreeSurface(imgDown);
-	SDL_FreeSurface(imgUp);
-
-	//log texture definition
-	GLuint leftTexture;
-	glGenTextures(1, &leftTexture);
-	glBindTexture(GL_TEXTURE_2D, leftTexture);
-
-	//loading textures
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgLeftRGB->w, imgLeftRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgLeftRGB->pixels);
-
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
-
-
-	GLuint frontTexture;
-	//rock texture definition
-	glGenTextures(1, &frontTexture);
-	glBindTexture(GL_TEXTURE_2D, frontTexture);
-
-	//loading textures
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgFrontRGB->w, imgFrontRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgFrontRGB->pixels);
-
-	GLuint downTexture;
-	//rock texture definition
-	glGenTextures(1, &downTexture);
-	glBindTexture(GL_TEXTURE_2D, downTexture);
-
-	//loading textures
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, imgDownRGB->w, imgDownRGB->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid*)imgDownRGB->pixels);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-	//two different programs are defined respectively to display colors for the flame
-	//and to display textures on the rocks and logs
-
-
-	FILE* VertFileT = fopen("./Shaders/EnvironnementShaders/EnviTexture.vert", "r");
-	FILE* FragFileT = fopen("./Shaders/EnvironnementShaders/EnviTexture.frag", "r");
-
-	//auto colorShader = Shader::loadFromFiles(VertFileC, FragFileC);
-	Shader* textureShader = Shader::loadFromFiles(VertFileT,FragFileT);
-	fclose(VertFileT);
-	fclose(FragFileT);
-
-	if (textureShader == NULL)
-	{
-		std::cerr << "COULD NOT LOAD SHADERS" << std::endl;
-		throw;
-	}
-
-	GLuint EnvironementBuffer;
-
-	glGenBuffers(1, &EnvironementBuffer);
-
-	glBindBuffer(GL_ARRAY_BUFFER, EnvironementBuffer);
-	glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3 + 2)*sizeof(float), NULL, GL_DYNAMIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * cube.getNbVertices(), cube.getVertices());
-	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(float) * cube.getNbVertices(), 3 * sizeof(float) * cube.getNbVertices(), cube.getNormals());
-	glBufferSubData(GL_ARRAY_BUFFER, 6 * sizeof(float) * cube.getNbVertices(), 2 * sizeof(float) * cube.getNbVertices(), cube.getUVs());
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//Camera
-	glm::mat4 projection = glm::perspective(glm::radians(110.f), (float) WIDTH / HEIGHT, 0.1f, 100.f);
-	glm::mat4 view = glm::lookAt(glm::vec3(1.f, 1.f, -1.f), glm::vec3(0, 0, 0), glm::vec3(0, 1.f, 0));
-	//glm::mat4 view = camera.lookAt();
-	glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 0.01f, 1.f));
 
 	bool isOpened = true;
 
@@ -309,84 +201,17 @@ int main(int argc, char *argv[])
 
 
 		// Draw environnement
-		glUseProgram(textureShader->getProgramID());
-
-		glBindBuffer(GL_ARRAY_BUFFER, EnvironementBuffer);
-
-
-		std::stack<glm::mat4> matrices;
-		matrices.push(projection * view); // Camera matrix
-
+		environement.draw(camera);
 
 		//redefinition of the vars passed to the shader
 		//to bind it on the right program
 		//definition of a variable to store the current reading offset (reusing the one used before for the insertion)
-		int currentOffset = 0;
 
 		//definition of the vars passed to the shader
-		GLint v = glGetUniformLocation(textureShader->getProgramID(), "uMvp");
-		GLint uTexture = glGetAttribLocation(textureShader->getProgramID(), "uTexture");
-		GLint vPosition = glGetAttribLocation(textureShader->getProgramID(), "vPosition");
-		GLint vNormals = glGetAttribLocation(textureShader->getProgramID(), "vNormals");
-		GLint vUV = glGetAttribLocation(textureShader->getProgramID(), "vUV");
-
+		
 		//selection of datas in the VBOS
-		//vertexes
-		glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
-		glEnableVertexAttribArray(vPosition);
-
-		currentOffset += 3 * sizeof(float) * cube.getNbVertices();
-
-		//normals
-		glVertexAttribPointer(vNormals, 3, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
-		glEnableVertexAttribArray(vNormals);
-
-		currentOffset += 3 * sizeof(float) * cube.getNbVertices();
-
-		//uvDatas
-		glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, INDICE_TO_PTR(currentOffset));
-		glEnableVertexAttribArray(vUV);
 
 		//left skybox drawing section
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, frontTexture);
-		glUniform1i(uTexture, 0);
-
-		float angle = M_PI / 2.0;
-		glm::mat4 translateZ = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.5f));
-		glm::mat4 rotateX = glm::rotate(translateZ, angle, glm::vec3(1.f, 0, 0));
-
-		matrices.push(matrices.top() * rotateX * model);
-		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
-		glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
-		glFinish();
-
-
-
-		matrices.pop();
-		// glm::mat4 translateX = glm::translate(rotateZ, glm::vec3(0.5f, 0, 0));
-		glm::mat4 translateX = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0, 0));
-		// glm::mat4 rotateZ = glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 0, 1.f));
-
-		glm::mat4 rotateZ = glm::rotate(translateX, angle, glm::vec3(0, 0, 1.f));
-        glm::mat4 rotationCorrect = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.f, 0, 0));
-
-		matrices.push(matrices.top() * rotationCorrect *rotateZ* model);
-
-		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(matrices.top()));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, leftTexture);
-        glUniform1i(uTexture, 0);
-        glDrawArrays(GL_TRIANGLES, 0, cube.getNbVertices());
-		glFinish();
-		matrices.pop();
-
-		matrices.pop();
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		glUseProgram(0);
-
 
 		// Draw forest
 		for (glm::vec3 const &coord : treesCoordinates) {
@@ -409,9 +234,6 @@ int main(int argc, char *argv[])
 
 	//Free
 	glUseProgram(0);
-
-	delete textureShader;
-	glDeleteBuffers(1, &EnvironementBuffer);
 
 	//Free everything
 	if (context != NULL)
