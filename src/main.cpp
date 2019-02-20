@@ -41,8 +41,8 @@
 #include <stack>
 #include <cmath>
 
-#define WIDTH     800
-#define HEIGHT    600
+#define WIDTH     1600
+#define HEIGHT    900
 #define FRAMERATE 60
 #define TIME_PER_FRAME_MS  (1.0f/FRAMERATE * 1e3)
 
