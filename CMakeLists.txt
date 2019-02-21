@@ -62,7 +62,6 @@ else()
     SET(SDL2_IMAGE_LIBRARY_PATH /usr/lib/x86_64-linux-gnu)
     SET(SDL2_IMAGE_INCLUDE_PATH /usr/include/ CACHE PATH "Path to SDL2 IMAGE include location")
 
-
     if((NOT EXISTS "${GL_LIBRARY_PATH}/libGL.so" ) AND (NOT EXISTS "${GL_LIBRARY_PATH}/GL.dll" ))
         MESSAGE(FATAL_ERROR "Could not find libGL in ${GL_LIBRARY_PATH}")
     endif()
