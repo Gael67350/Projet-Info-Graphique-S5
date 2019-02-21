@@ -108,7 +108,7 @@ file(GLOB_RECURSE HEADERS include/*.h include/*.hpp)
 
 #TODO add the library path here
 link_directories(${SDL2_LIBRARY_PATH} ${GLEW_LIBRARY_PATH} ${SDL2_IMAGE_LIBRARY_PATH})
-add_executable(Graphics_Squelette ${SRCS} ${HEADERS} include/Fire.h src/Fire.cpp)
+add_executable(Graphics_Squelette ${SRCS} ${HEADERS} include/Fire.h src/Fire.cpp src/GrassElement.cpp include/GrassElement.h)
 target_compile_definitions(Graphics_Squelette PUBLIC _USE_MATH_DEFINES)
 
 #TODO add another -I parameter (include directory to take account to) and a -l parameter (libraries to link to)
@@ -258,6 +258,7 @@ endforeach(srcfile)
 #addition of others Shaders files
 file(GLOB SHADERRESOURCES
         Shaders/FireShaders/*)
+
 foreach(srcfile ${SHADERRESOURCES})
     get_filename_component(dirname  "${srcfile}" DIRECTORY)
     get_filename_component(filename "${srcfile}" NAME)

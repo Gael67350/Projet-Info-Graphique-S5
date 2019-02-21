@@ -35,6 +35,7 @@
 #include <time.h>
 #include <cstdlib>
 #include <stack>
+#include <GrassElement.h>
 #include <cmath>
 
 #define WIDTH     800
@@ -93,6 +94,10 @@ int main(int argc, char *argv[])
 	// Create FirTree
 	FirTree firTree = FirTree(500);
 
+	//creating grass element
+
+	GrassElement grass = GrassElement();
+
 	// View from world space to camera space
 	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
 	camera.setPosition(glm::vec3(0.f, 5.f, -12.f));
@@ -105,6 +110,12 @@ int main(int argc, char *argv[])
 
 	std::vector<glm::vec3> treesCoordinates;
 	std::vector<std::pair<float, bool>> treesWindData;
+
+    // Generate trees coordinates
+	float maxRadiusGrass = 2.5, minRadiusGrass = 1.8, nbSliceGrass = 2;
+    size_t nbGrass = 15;
+
+    std::vector<glm::vec3> grassCoordinates;
 
 	for (float radius = minRadius; radius <= maxRadius; radius += (maxRadius - minRadius) / nbSlice) {
 		if (nbDrawnTrees > nbFirTrees) {
@@ -124,11 +135,46 @@ int main(int argc, char *argv[])
 
 			float x = (radius * randOffsetX) * cos(theta);
 			float z = (radius * randOffsetZ) * sin(theta);
+      
+			glm::vec3 currentVec = glm::vec3(x, 0, z);
 
-			float windAngle = (float(rand()) / (float)RAND_MAX) * (FirTree::WIND_MAX_ANGLE - FirTree::WIND_MIN_ANGLE) + FirTree::WIND_MIN_ANGLE;
+			treesCoordinates.push_back(currentVec);
+      
+      	float windAngle = (float(rand()) / (float)RAND_MAX) * (FirTree::WIND_MAX_ANGLE - FirTree::WIND_MIN_ANGLE) + FirTree::WIND_MIN_ANGLE;
 
-			treesCoordinates.push_back(glm::vec3(x, 0, z));
 			treesWindData.push_back(std::make_pair(windAngle, false));
+
+            size_t nbDrawnGrass = 0;
+
+            if(radius < minRadius+3*((maxRadius - minRadius) / nbSlice))
+            {
+                //generating grass elements arround trees
+                for (float radiusC = minRadiusGrass;
+                     radiusC <= maxRadiusGrass; radiusC += (maxRadiusGrass - minRadiusGrass) / nbSliceGrass) {
+                    if (nbDrawnGrass >= nbGrass) {
+                        break;
+                    }
+
+                    for (double thetaC = 0; thetaC <= 2*M_PI; thetaC += (2*M_PI * nbSliceGrass) / nbGrass) {
+                        if (nbDrawnGrass >= nbGrass) {
+                            break;
+                        }
+
+                        float randOffsetXC = (float) (rand() % 2 + 1);
+                        float randOffsetZC = (float) (rand() % 2 + 1);
+
+                        if (randOffsetXC > 1.6) { randOffsetXC = 1.6f; }
+                        if (randOffsetZC > 1.6) { randOffsetZC = 1.6f; }
+
+                        float xC = (radiusC * randOffsetXC) * cos(thetaC);
+                        float zC = (radiusC * randOffsetZC) * sin(thetaC);
+
+                        grassCoordinates.push_back(glm::vec3(xC, 0, zC) + currentVec);
+
+                        nbDrawnGrass++;
+                    }
+                }
+            }
 
 			nbDrawnTrees++;
 		}
@@ -151,6 +197,7 @@ int main(int argc, char *argv[])
 	glm::mat4 fireModificationMatrix = glm::mat4(1.0f);
 	fireModificationMatrix = glm::scale(fireModificationMatrix, glm::vec3(0.9f, 0.9f, 0.9f));
 	fireModificationMatrix = glm::translate(fireModificationMatrix, glm::vec3(-0.3f, 0.f, -7.f));
+
 	Fire campFire(fireModificationMatrix);
 
 	//setting up the transparency management
@@ -207,6 +254,7 @@ int main(int argc, char *argv[])
 		// Draw environment
 		environment.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
 
+
 		// Draw forest
 		for (int i = 0; i < treesCoordinates.size(); i++) {
 			glm::vec3 coord = treesCoordinates.at(i);
@@ -229,6 +277,8 @@ int main(int argc, char *argv[])
 			else {
 				windData.first -= FirTree::WIND_SPEED_RETURN * (M_PI / 180.f);
 			}
+
+
 		}
 
 		//Draw fire

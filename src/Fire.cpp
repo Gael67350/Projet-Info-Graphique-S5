@@ -338,7 +338,7 @@ void Fire::updateFlame()
         }
 
         //updating light intensity
-        if(fireUpdateCount == 170)
+        if(fireUpdateCount == 155)
         {
             fireUpdateCount = 0;
             float newLightIntensity = ((float) rand() / (float) RAND_MAX) / 2 - 0.25 + lightIntensity;

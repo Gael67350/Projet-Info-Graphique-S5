@@ -4,9 +4,6 @@ precision mediump float;
 attribute vec3 vPosition;
 uniform mat4 uMvp;
 
-//normals
-
-
 //uvValues
 attribute vec2 vUV;
 
