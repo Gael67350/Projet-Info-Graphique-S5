@@ -35,7 +35,7 @@ void main()
 		vec3 cameraDirection = normalize(uCameraPosition - varyPosition.xyz);
 		
 		vec3 ambient = ambientIntensity * uLightColor * textureColor.rgb;
-		vec3 diffuse = diffuseIntensity * 0.8 * textureColor.rgb * uLightColor;
+		vec3 diffuse = diffuseIntensity * 0.7 * textureColor.rgb * uLightColor;
 		vec3 specular = specIntensity * pow(max(0.0, dot(reflect(-lightDirection, varyNormal), cameraDirection)), shiny) * uLightColor;
 		
 		color = vec4(lightAttenuation * (ambient + diffuse + specular), 1.0);
