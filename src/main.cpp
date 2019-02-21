@@ -1,10 +1,5 @@
 ﻿#define  GLM_FORCE_RADIANS
 
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <stack>
-
 //SDL Libraries
 #include <SDL2/SDL.h>
 //#include <SDL2/SDL_syswm.h>
@@ -205,7 +200,7 @@ int main(int argc, char *argv[])
 		// Update lights
 		std::tuple<glm::vec3, float, float, glm::vec3> lightInfo = campFire.getLightInfo();
 		firTree.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
-		 
+
 		float environementAmbient = 1.4f * std::get<2>(lightInfo);
 		environement.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), environementAmbient <= 1.f ? environementAmbient : 1.f, std::get<1>(lightInfo));
 
