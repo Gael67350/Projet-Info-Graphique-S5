@@ -64,8 +64,8 @@ bool Environment::loadShaders() {
 }
 
 void Environment::loadTextures() {
-	SDL_Surface* imgFront = IMG_Load("Ressources/front.JPG");
-	SDL_Surface* imgDown = IMG_Load("Ressources/down.JPG");
+	SDL_Surface* imgFront = IMG_Load("Ressources/sky.jpg");
+	SDL_Surface* imgDown = IMG_Load("Ressources/floor.jpg");
 
 	SDL_Surface* imgFrontRGB = SDL_ConvertSurfaceFormat(imgFront, SDL_PIXELFORMAT_RGBA8888, 0);
 	SDL_Surface* imgDownRGB = SDL_ConvertSurfaceFormat(imgDown, SDL_PIXELFORMAT_RGBA8888, 0);
