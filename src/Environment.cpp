@@ -1,4 +1,4 @@
-#include "Environement.h"
+#include "Environment.h"
 
 #include <cmath>
 #include <stack>
@@ -12,7 +12,7 @@
 
 #include <Cube.h>
 
-Environement::Environement() {
+Environment::Environment() {
 	Cube cube = Cube();
 
 	m_vertices.assign(cube.getVertices(), cube.getVertices() + (3 * cube.getNbVertices()));
@@ -20,10 +20,10 @@ Environement::Environement() {
 	m_uvs.assign(cube.getUVs(), cube.getUVs() + (2 * cube.getNbVertices()));
 
 	// Put all fir tree parts in the VBO
-	GLuint environementBuffer;
-	glGenBuffers(1, &environementBuffer);
+	GLuint environmentBuffer;
+	glGenBuffers(1, &environmentBuffer);
 
-	glBindBuffer(GL_ARRAY_BUFFER, environementBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, environmentBuffer);
 	glBufferData(GL_ARRAY_BUFFER, cube.getNbVertices() * (3 + 3 + 2) * sizeof(float), NULL, GL_DYNAMIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float) * cube.getNbVertices(), cube.getVertices());
@@ -32,10 +32,10 @@ Environement::Environement() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	m_buffer = environementBuffer;
+	m_buffer = environmentBuffer;
 }
 
-Environement::~Environement() {
+Environment::~Environment() {
 	glDeleteBuffers(1, &m_buffer);
 
 	delete m_texturedShader;
@@ -45,9 +45,9 @@ Environement::~Environement() {
 	}
 }
 
-bool Environement::loadShaders() {
-	FILE* VertFileT = fopen("./Shaders/EnvironnementShaders/EnviTexture.vert", "r");
-	FILE* FragFileT = fopen("./Shaders/EnvironnementShaders/EnviTexture.frag", "r");
+bool Environment::loadShaders() {
+	FILE* VertFileT = fopen("./Shaders/EnvironmentShaders/textured.vert", "r");
+	FILE* FragFileT = fopen("./Shaders/EnvironmentShaders/textured.frag", "r");
 
 	Shader* textureShader = Shader::loadFromFiles(VertFileT, FragFileT);
 
@@ -63,7 +63,7 @@ bool Environement::loadShaders() {
 	return true;
 }
 
-void Environement::loadTextures() {
+void Environment::loadTextures() {
 	SDL_Surface* imgFront = IMG_Load("Ressources/front.jpg");
 	SDL_Surface* imgDown = IMG_Load("Ressources/down.jpg");
 
@@ -111,7 +111,7 @@ void Environement::loadTextures() {
 	m_texturesIDs.push_back(downTextureID);
 }
 
-void Environement::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength) {
+void Environment::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength) {
 	m_lightPosition = lightPosition;
 	m_lightColor = lightColor;
 	m_materials = glm::vec4(ambientStrength >= 0 ? ambientStrength : 1.f, diffuseStrength >= 0 ? diffuseStrength : 1.f, 0.1f, 16.f);
@@ -120,11 +120,11 @@ void Environement::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, floa
 	m_lightState = true;
 }
 
-bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
+bool Environment::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
 	float angle = 90 * (M_PI / 180.f);
 
 	glm::mat4 id(1.f);
-	glm::mat4 environementModel = glm::translate(id, position);
+	glm::mat4 environmentModel = glm::translate(id, position);
 
 	// Background
 	glm::mat4 rotateX = glm::rotate(id, angle, glm::vec3(1.f, 0, 0));
@@ -150,7 +150,7 @@ bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &
 
 	// Build scene graph
 	std::stack<glm::mat4> matrices;
-	matrices.push(environementModel);
+	matrices.push(environmentModel);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
 
@@ -204,7 +204,7 @@ bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &
 	return true;
 }
 
-void Environement::initTexturedShaderData() {
+void Environment::initTexturedShaderData() {
 	GLint vPosition, vNormal, vUV;
 
 	int offset = 0;
@@ -226,7 +226,7 @@ void Environement::initTexturedShaderData() {
 	glEnableVertexAttribArray(vUV);
 }
 
-void Environement::initLightData(Camera const &camera) {
+void Environment::initLightData(Camera const &camera) {
 	GLint uIsLight, uModel, uLightColor, uLightPosition, uMaterials, uCameraPosition;
 
 	uIsLight = glGetUniformLocation(m_texturedShader->getProgramID(), "uIsLight");
@@ -251,7 +251,7 @@ void Environement::initLightData(Camera const &camera) {
 	glUniform3f(uCameraPosition, cameraPos.x, cameraPos.y, cameraPos.z);
 }
 
-void Environement::initModelViewMatrixData(glm::mat4 const & model, Camera const &camera) {
+void Environment::initModelViewMatrixData(glm::mat4 const & model, Camera const &camera) {
 	if (!m_isInitLight || !m_lightState) {
 		return;
 	}
@@ -265,7 +265,7 @@ void Environement::initModelViewMatrixData(glm::mat4 const & model, Camera const
 	glUniformMatrix4fv(uInvModelViewMatrix, 1, true, glm::value_ptr(glm::inverse(camera.getViewMatrix() * model)));
 }
 
-void Environement::toggleLight() {
+void Environment::toggleLight() {
 	if (!m_isInitLight) {
 		return;
 	}

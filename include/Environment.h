@@ -7,11 +7,11 @@
 #include <Shader.h>
 #include <Camera.h>
 
-class Environement {
+class Environment {
 public:
-	Environement();
+	Environment();
 
-	~Environement();
+	~Environment();
 
 	bool loadShaders();
 

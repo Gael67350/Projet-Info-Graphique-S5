@@ -24,7 +24,7 @@
 // Geometry
 #include <Geometry.h>
 #include <FirTree.h>
-#include <Environement.h>
+#include <Environment.h>
 
 // Camera
 #include <Camera.h>
@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
 	// Init random
 	srand(time(NULL));
 
-	// Create Environement
-	Environement environement = Environement();
+	// Create Environment
+	Environment environment = Environment();
 
 	// Create FirTree
 	FirTree firTree = FirTree(500);
@@ -136,14 +136,14 @@ int main(int argc, char *argv[])
 
 	// Load textures
 	firTree.loadTextures();
-	environement.loadTextures();
+	environment.loadTextures();
 
 	// Load Shaders
 	if (!firTree.loadShaders()) {
 		return EXIT_FAILURE;
 	}
 
-	if (!environement.loadShaders()) {
+	if (!environment.loadShaders()) {
 		return EXIT_FAILURE;
 	}
 
@@ -201,11 +201,11 @@ int main(int argc, char *argv[])
 		std::tuple<glm::vec3, float, float, glm::vec3> lightInfo = campFire.getLightInfo();
 		firTree.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
 
-		float environementAmbient = 1.4f * std::get<2>(lightInfo);
-		environement.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), environementAmbient <= 1.f ? environementAmbient : 1.f, std::get<1>(lightInfo));
+		float environmentAmbient = 1.4f * std::get<2>(lightInfo);
+		environment.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), environmentAmbient <= 1.f ? environmentAmbient : 1.f, std::get<1>(lightInfo));
 
-		// Draw environnement
-		environement.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
+		// Draw environment
+		environment.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
 
 		// Draw forest
 		for (int i = 0; i < treesCoordinates.size(); i++) {
