@@ -9,7 +9,7 @@ m_verticalAxis{ verticalAxis }, m_aspectRatio{ aspectRatio }, m_fov{ fov } {}
 Camera::Camera(float aspectRatio, float fov) : m_position(0, 0, 0), m_target(0, 0, 0), m_verticalAxis(0, 1.f, 0), m_aspectRatio(aspectRatio), m_fov(fov) {}
 
 glm::mat4 Camera::lookAt() const{
-	glm::mat4 projection = glm::perspective(glm::radians(m_fov), m_aspectRatio, 0.1f, 100.f);
+	glm::mat4 projection = glm::perspective(glm::radians(m_fov), m_aspectRatio, 1.f, 500.f);
 	glm::mat4 view = glm::lookAt(m_position, m_target, m_verticalAxis);
 
 	return projection * view;

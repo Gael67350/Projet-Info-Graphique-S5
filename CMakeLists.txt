@@ -255,9 +255,10 @@ foreach(srcfile ${SHADERRESOURCES})
         )
 endforeach(srcfile)
 
-#copy of the project texture ressources to the bin path
+#addition of others Shaders files
 file(GLOB SHADERRESOURCES
-        Ressources/*)
+        Shaders/FireShaders/*)
+
 foreach(srcfile ${SHADERRESOURCES})
     get_filename_component(dirname  "${srcfile}" DIRECTORY)
     get_filename_component(filename "${srcfile}" NAME)
@@ -275,7 +276,6 @@ foreach(srcfile ${SHADERRESOURCES})
             VERBATIM
     )
 endforeach(srcfile)
-
 
 add_custom_target(ShaderTarget DEPENDS ${ShadersOutput})
 add_dependencies(Graphics_Squelette ShaderTarget)
