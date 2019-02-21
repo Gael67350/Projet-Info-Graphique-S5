@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 
     // Generate trees coordinates
 	float maxRadiusGrass = 2.5, minRadiusGrass = 1.8, nbSliceGrass = 2;
-    size_t nbGrass = 15;
+    size_t nbGrass = 9;
 
     std::vector<glm::vec3> grassCoordinates;
 
@@ -175,7 +175,6 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-
 			nbDrawnTrees++;
 		}
 	}
@@ -254,6 +253,11 @@ int main(int argc, char *argv[])
 		// Draw environment
 		environment.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
 
+        //Draw grass
+        for (glm::vec3 const &coord : grassCoordinates)
+        {
+            grass.draw(camera,glm::vec3(coord.x, coord.y, coord.z) , campFire.getLightInfo());
+        }
 
 		// Draw forest
 		for (int i = 0; i < treesCoordinates.size(); i++) {
