@@ -111,6 +111,15 @@ void Environement::loadTextures() {
 	m_texturesIDs.push_back(downTextureID);
 }
 
+void Environement::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength) {
+	m_lightPosition = lightPosition;
+	m_lightColor = lightColor;
+	m_materials = glm::vec4(ambientStrength >= 0 ? ambientStrength : 1.f, diffuseStrength >= 0 ? diffuseStrength : 1.f, 0.1f, 16.f);
+
+	m_isInitLight = true;
+	m_lightState = true;
+}
+
 bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
 	float angle = 90 * (M_PI / 180.f);
 
@@ -136,24 +145,24 @@ bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &
 
 	glm::mat4 leftModel = translateX * scaleZ * rotateZ;
 
-	GLint uMVP = glGetUniformLocation(m_texturedShader->getProgramID(), "uMvp");
+	GLint uMVP = glGetUniformLocation(m_texturedShader->getProgramID(), "uMVP");
 	GLint uTexture = glGetAttribLocation(m_texturedShader->getProgramID(), "uTexture");
 
 	// Build scene graph
 	std::stack<glm::mat4> matrices;
-	matrices.push(camera.lookAt());
-
-	matrices.push(matrices.top() * environementModel);
+	matrices.push(environementModel);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
 
 	glUseProgram(m_texturedShader->getProgramID());
 
 	initTexturedShaderData();
+	initLightData(camera);
+	toggleLight();
 
 	matrices.push(matrices.top() * backgroundModel);
 
-	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(camera.lookAt() * matrices.top()));
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texturesIDs[0]);
@@ -164,14 +173,17 @@ bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &
 
 	matrices.push(matrices.top() * leftModel);
 
-	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(camera.lookAt() * matrices.top()));
 
 	glDrawArrays(GL_TRIANGLES, 0, getNbVertices());
 
 	matrices.pop();
-	matrices.push(matrices.top() * floorModel);
 
-	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(matrices.top()));
+	matrices.push(matrices.top() * floorModel);
+	toggleLight();
+	initModelViewMatrixData(matrices.top(), camera);
+
+	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(camera.lookAt() * matrices.top()));
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texturesIDs[1]);
@@ -183,7 +195,6 @@ bool Environement::draw(Camera &camera, glm::vec3 const &position, float const &
 	glUseProgram(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	matrices.pop();
 	matrices.pop();
 
 	if (!matrices.empty()) {
@@ -213,4 +224,54 @@ void Environement::initTexturedShaderData() {
 	vUV = glGetAttribLocation(m_texturedShader->getProgramID(), "vUV");
 	glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, (void*)(offset));
 	glEnableVertexAttribArray(vUV);
+}
+
+void Environement::initLightData(Camera const &camera) {
+	GLint uIsLight, uModel, uLightColor, uLightPosition, uMaterials, uCameraPosition;
+
+	uIsLight = glGetUniformLocation(m_texturedShader->getProgramID(), "uIsLight");
+	glUniform1i(uIsLight, m_isInitLight);
+
+	if (!m_isInitLight || !m_lightState) {
+		return;
+	}
+
+	uLightColor = glGetUniformLocation(m_texturedShader->getProgramID(), "uLightColor");
+	glUniform3f(uLightColor, m_lightColor.r, m_lightColor.g, m_lightColor.b);
+
+	uLightPosition = glGetUniformLocation(m_texturedShader->getProgramID(), "uLightPosition");
+	glUniform3f(uLightPosition, m_lightPosition.x, m_lightPosition.y, m_lightPosition.z);
+
+	uMaterials = glGetUniformLocation(m_texturedShader->getProgramID(), "uMaterials");
+	glUniform4f(uMaterials, m_materials.x, m_materials.y, m_materials.z, m_materials.w);
+
+	glm::vec3 cameraPos = camera.getPosition();
+
+	uCameraPosition = glGetUniformLocation(m_texturedShader->getProgramID(), "uCameraPosition");
+	glUniform3f(uCameraPosition, cameraPos.x, cameraPos.y, cameraPos.z);
+}
+
+void Environement::initModelViewMatrixData(glm::mat4 const & model, Camera const &camera) {
+	if (!m_isInitLight || !m_lightState) {
+		return;
+	}
+
+	GLint uModelViewMatrix, uInvModelViewMatrix;
+
+	uModelViewMatrix = glGetUniformLocation(m_texturedShader->getProgramID(), "uModelViewMatrix");
+	glUniformMatrix4fv(uModelViewMatrix, 1, false, glm::value_ptr(camera.getViewMatrix() * model));
+
+	uInvModelViewMatrix = glGetUniformLocation(m_texturedShader->getProgramID(), "uInvModelViewMatrix");
+	glUniformMatrix4fv(uInvModelViewMatrix, 1, true, glm::value_ptr(glm::inverse(camera.getViewMatrix() * model)));
+}
+
+void Environement::toggleLight() {
+	if (!m_isInitLight) {
+		return;
+	}
+
+	m_lightState = !m_lightState;
+
+	GLint uLightState = glGetUniformLocation(m_texturedShader->getProgramID(), "uLightState");
+	glUniform1i(uLightState, m_lightState);
 }

@@ -200,6 +200,7 @@ int main(int argc, char *argv[])
 
 
 		// Draw environnement
+		environement.initLight(glm::vec3(0), glm::vec3(1), 0.5f, 0.5f);
 		environement.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
 
 		//redefinition of the vars passed to the shader

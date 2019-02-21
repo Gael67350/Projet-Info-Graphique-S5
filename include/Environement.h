@@ -17,6 +17,8 @@ public:
 
 	void loadTextures();
 
+	void initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength);
+
 	bool draw(Camera &camera, glm::vec3 const &position = { 0,0,0 }, float const &scaling = 1.f);
 
 	const std::vector<float> getVertices() const { return m_vertices; };
@@ -29,6 +31,9 @@ public:
 
 private:
 	void initTexturedShaderData();
+	void initLightData(Camera const &camera);
+	void initModelViewMatrixData(glm::mat4 const & model, Camera const &camera);
+	void toggleLight();
 
 	std::vector<float> m_vertices;
 	std::vector<float> m_normals;
@@ -39,6 +44,12 @@ private:
 	Shader* m_texturedShader;
 	std::vector<SDL_Surface*> m_textures;
 	std::vector<GLuint> m_texturesIDs;
+
+	bool m_isInitLight = false;
+	bool m_lightState = false;
+	glm::vec3 m_lightPosition;
+	glm::vec3 m_lightColor;
+	glm::vec4 m_materials; // Ambient strength, Diffuse strength, Specular strength, Shininess
 };
 
 #endif
