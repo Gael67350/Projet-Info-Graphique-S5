@@ -112,6 +112,7 @@ class Fire
 
     public:
         Fire(glm::mat4 placementMatrix);
+        ~Fire();
         void draw(Camera const& currentCamera);
 
         std::tuple<glm::vec3,float,float,glm::vec3> getLightInfo()

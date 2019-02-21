@@ -46,7 +46,7 @@ private:
 
 public:
     GrassElement();
-
+    ~GrassElement();
     void draw(Camera const &currentCamera, glm::vec3 const &displacementVector,std::tuple<glm::vec3, float, float, glm::vec3> lightData);
 };
 

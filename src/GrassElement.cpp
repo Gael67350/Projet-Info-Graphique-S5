@@ -128,3 +128,10 @@ color{glm::vec4(0.176f, 0.584f, 0.f,1.0f)}
     initBuffer();
     initShaders();
 }
+
+GrassElement::~GrassElement()
+{
+    glDeleteBuffers(1,&grassBuffer);
+
+    delete(colorShader);
+}

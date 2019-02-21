@@ -613,3 +613,16 @@ void Fire::draw(Camera const& currentCamera)
 
     updateFlame();
 }
+
+Fire::~Fire()
+{
+
+    //definition of the different buffers
+    glDeleteBuffers(1,&fireBuffer);
+
+    //shaderFiles
+    delete(colorShader);
+    delete(textureShader);
+
+
+}
