@@ -64,15 +64,14 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-
 	//Create a Window
 	SDL_Window *window = SDL_CreateWindow("VR Camera",                           //Titre
-										  SDL_WINDOWPOS_UNDEFINED,               //X Position
-										  SDL_WINDOWPOS_UNDEFINED,               //Y Position
-										  WIDTH, HEIGHT,                         //Resolution
-										  SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN); //Flags (OpenGL + Show)
+		SDL_WINDOWPOS_UNDEFINED,               //X Position
+		SDL_WINDOWPOS_UNDEFINED,               //Y Position
+		WIDTH, HEIGHT,                         //Resolution
+		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN); //Flags (OpenGL + Show)
 
-	//Initialize OpenGL Version (version 3.0)
+//Initialize OpenGL Version (version 3.0)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
@@ -99,7 +98,7 @@ int main(int argc, char *argv[])
 	FirTree firTree = FirTree(500);
 
 	// View from world space to camera space
-	Camera camera = Camera((float) WIDTH / HEIGHT, 110.f);
+	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
 	camera.setPosition(glm::vec3(0, 4.f, -12.f));
 
 	// Generate trees coordinates
@@ -120,8 +119,8 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			float randOffsetX = (float) (rand() % 2 + 1);
-			float randOffsetZ = (float) (rand() % 2 + 1);
+			float randOffsetX = (float)(rand() % 2 + 1);
+			float randOffsetZ = (float)(rand() % 2 + 1);
 
 			if (randOffsetX > 1.6) { randOffsetX = 1.6f; }
 			if (randOffsetZ > 1.6) { randOffsetZ = 1.6f; }
@@ -154,13 +153,13 @@ int main(int argc, char *argv[])
 	fireModificationMatrix = glm::translate(fireModificationMatrix, glm::vec3(-0.3f, 0.f, -7.f));
 	Fire campFire(fireModificationMatrix);
 
-    //setting up the transparency management
-    glEnable(GL_DEPTH_TEST); //Activation of the depth test
+	//setting up the transparency management
+	glEnable(GL_DEPTH_TEST); //Activation of the depth test
 
-    //enableing transparency
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//enableing transparency
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (!(IMG_Init(IMG_INIT_JPG)&IMG_INIT_JPG))
 	{
@@ -181,37 +180,26 @@ int main(int argc, char *argv[])
 		while (SDL_PollEvent(&event)) {
 			switch (event.type)
 			{
-				case SDL_WINDOWEVENT:
-					switch (event.window.event)
-					{
-						case SDL_WINDOWEVENT_CLOSE:
-							isOpened = false;
-							break;
-						default:
-							break;
-					}
+			case SDL_WINDOWEVENT:
+				switch (event.window.event)
+				{
+				case SDL_WINDOWEVENT_CLOSE:
+					isOpened = false;
 					break;
-					//We can add more event, like listening for the keyboard or the mouse. See SDL_Event documentation for more details
+				default:
+					break;
+				}
+				break;
+				//We can add more event, like listening for the keyboard or the mouse. See SDL_Event documentation for more details
 			}
 		}
 
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-
 		// Draw environnement
 		environement.initLight(glm::vec3(0), glm::vec3(1), 0.5f, 0.5f);
 		environement.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
-
-		//redefinition of the vars passed to the shader
-		//to bind it on the right program
-		//definition of a variable to store the current reading offset (reusing the one used before for the insertion)
-
-		//definition of the vars passed to the shader
-		
-		//selection of datas in the VBOS
-
-		//left skybox drawing section
 
 		// Draw forest
 		for (glm::vec3 const &coord : treesCoordinates) {
@@ -221,15 +209,15 @@ int main(int argc, char *argv[])
 		//Draw fire
 		campFire.draw(camera);
 
-        //Display on screen (swap the buffer on screen and the buffer you are drawing on)
-        SDL_GL_SwapWindow(window);
+		//Display on screen (swap the buffer on screen and the buffer you are drawing on)
+		SDL_GL_SwapWindow(window);
 
-        //Time in ms telling us when this frame ended. Useful for keeping a fix framerate
-        uint32_t timeEnd = SDL_GetTicks();
+		//Time in ms telling us when this frame ended. Useful for keeping a fix framerate
+		uint32_t timeEnd = SDL_GetTicks();
 
-        //We want FRAMERATE FPS
-        if (timeEnd - timeBegin < TIME_PER_FRAME_MS)
-            SDL_Delay(TIME_PER_FRAME_MS - (timeEnd - timeBegin));
+		//We want FRAMERATE FPS
+		if (timeEnd - timeBegin < TIME_PER_FRAME_MS)
+			SDL_Delay(TIME_PER_FRAME_MS - (timeEnd - timeBegin));
 	}
 
 	//Free
