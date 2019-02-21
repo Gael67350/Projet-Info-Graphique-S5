@@ -114,7 +114,7 @@ void Environment::loadTextures() {
 void Environment::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float ambientStrength, float diffuseStrength) {
 	m_lightPosition = lightPosition;
 	m_lightColor = lightColor;
-	m_materials = glm::vec4(ambientStrength >= 0 ? ambientStrength : 1.f, diffuseStrength >= 0 ? diffuseStrength : 1.f, 0.1f, 16.f);
+	m_materials = glm::vec4(ambientStrength, diffuseStrength , 0.1f, 15.f);
 
 	m_isInitLight = true;
 	m_lightState = true;
