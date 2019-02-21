@@ -201,8 +201,8 @@ int main(int argc, char *argv[])
 		std::tuple<glm::vec3, float, float, glm::vec3> lightInfo = campFire.getLightInfo();
 		firTree.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
 
-		float environmentAmbient = 1.4f * std::get<2>(lightInfo);
-		environment.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), environmentAmbient <= 1.f ? environmentAmbient : 1.f, std::get<1>(lightInfo));
+		float environmentDiffuse = 1.4f * std::get<1>(lightInfo);
+		environment.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), 0.8f, environmentDiffuse <= 1.f ? environmentDiffuse : 1.f);
 
 		// Draw environment
 		environment.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
