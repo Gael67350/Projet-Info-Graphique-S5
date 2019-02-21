@@ -64,8 +64,8 @@ bool Environment::loadShaders() {
 }
 
 void Environment::loadTextures() {
-	SDL_Surface* imgFront = IMG_Load("Ressources/front.jpg");
-	SDL_Surface* imgDown = IMG_Load("Ressources/down.jpg");
+	SDL_Surface* imgFront = IMG_Load("Ressources/front.JPG");
+	SDL_Surface* imgDown = IMG_Load("Ressources/down.JPG");
 
 	SDL_Surface* imgFrontRGB = SDL_ConvertSurfaceFormat(imgFront, SDL_PIXELFORMAT_RGBA8888, 0);
 	SDL_Surface* imgDownRGB = SDL_ConvertSurfaceFormat(imgDown, SDL_PIXELFORMAT_RGBA8888, 0);
@@ -123,6 +123,9 @@ void Environment::initLight(glm::vec3 lightPosition, glm::vec3 lightColor, float
 bool Environment::draw(Camera &camera, glm::vec3 const &position, float const &scaling) {
 	float angle = 90 * (M_PI / 180.f);
 
+	//definition of the parameter of texture multiplication factor
+	GLint textureMultiplier = glGetUniformLocation(m_texturedShader->getProgramID(),"textureMultiplier");
+
 	glm::mat4 id(1.f);
 	glm::mat4 environmentModel = glm::translate(id, position);
 
@@ -156,6 +159,11 @@ bool Environment::draw(Camera &camera, glm::vec3 const &position, float const &s
 
 	glUseProgram(m_texturedShader->getProgramID());
 
+
+	glUniform1f(textureMultiplier,5.f);
+
+	// drawing front background element
+
 	initTexturedShaderData();
 	initLightData(camera);
 	toggleLight();
@@ -171,6 +179,8 @@ bool Environment::draw(Camera &camera, glm::vec3 const &position, float const &s
 
 	matrices.pop();
 
+	// drawing left background element
+
 	matrices.push(matrices.top() * leftModel);
 
 	glUniformMatrix4fv(uMVP, 1, GL_FALSE, glm::value_ptr(camera.lookAt() * matrices.top()));
@@ -178,6 +188,11 @@ bool Environment::draw(Camera &camera, glm::vec3 const &position, float const &s
 	glDrawArrays(GL_TRIANGLES, 0, getNbVertices());
 
 	matrices.pop();
+
+
+	glUniform1f(textureMultiplier,35.0f);
+
+	// drawing floor element
 
 	matrices.push(matrices.top() * floorModel);
 	toggleLight();
@@ -205,7 +220,7 @@ bool Environment::draw(Camera &camera, glm::vec3 const &position, float const &s
 }
 
 void Environment::initTexturedShaderData() {
-	GLint vPosition, vNormal, vUV;
+	GLint vPosition, vNormal, vUV ;
 
 	int offset = 0;
 

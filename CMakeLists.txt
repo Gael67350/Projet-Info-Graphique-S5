@@ -276,27 +276,5 @@ foreach(srcfile ${SHADERRESOURCES})
     )
 endforeach(srcfile)
 
-#copy of the project texture ressources to the bin path
-file(GLOB SHADERRESOURCES
-        Ressources/*)
-foreach(srcfile ${SHADERRESOURCES})
-    get_filename_component(dirname  "${srcfile}" DIRECTORY)
-    get_filename_component(filename "${srcfile}" NAME)
-    file(RELATIVE_PATH relpath "${CMAKE_CURRENT_SOURCE_DIR}" "${srcfile}")
-    file(RELATIVE_PATH dirrelpath "${CMAKE_CURRENT_SOURCE_DIR}" "${dirname}")
-
-    set(ShadersOutput ${ShadersOutput} "${relpath}")
-
-    add_custom_command(
-            OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${relpath}"
-            DEPENDS ${relpath}
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}"
-            COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${relpath}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${dirrelpath}/${filename}"
-            COMMENT "Generating ${relpath}"
-            VERBATIM
-    )
-endforeach(srcfile)
-
-
 add_custom_target(ShaderTarget DEPENDS ${ShadersOutput})
 add_dependencies(Graphics_Squelette ShaderTarget)

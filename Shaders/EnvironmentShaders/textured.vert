@@ -14,6 +14,9 @@ varying vec4 varyPosition;
 varying vec3 varyNormal;
 varying vec2 varyUV;
 
+//multiplication factor for texture replication
+uniform float textureMultiplier ;
+
 void main()
 {
 	gl_Position = uMVP * vec4(vPosition, 1.0); 
@@ -23,5 +26,5 @@ void main()
 	varyPosition = uModelViewMatrix * vec4(vPosition, 1.0);
 	varyPosition = varyPosition / varyPosition.w;
    
-	varyUV = vUV;
+	varyUV = vec2(mat3(textureMultiplier,0.0,0.0,0.0,textureMultiplier,0.0,0.0,0.0,1.0)*vec3(vUV,1.0));
 }
