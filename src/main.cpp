@@ -40,6 +40,7 @@
 #include <time.h>
 #include <cstdlib>
 #include <stack>
+#include <cmath>
 
 #define WIDTH     800
 #define HEIGHT    600
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
 	glViewport(0, 0, WIDTH, HEIGHT); //Draw on ALL the screen
 
 	//The OpenGL background color (RGBA, each component between 0.0f and 1.0f)
-	glClearColor(1.0, 1.0, 1.0, 1.0); //Full Black
+	glClearColor(0.0, 0.0, 0.0, 1.0); //Full Black
 
 	// Init random
 	srand(time(NULL));
@@ -99,7 +100,7 @@ int main(int argc, char *argv[])
 
 	// View from world space to camera space
 	Camera camera = Camera((float)WIDTH / HEIGHT, 110.f);
-	camera.setPosition(glm::vec3(0, 4.f, -12.f));
+	camera.setPosition(glm::vec3(0.f, 5.f, -12.f));
 
 	// Generate trees coordinates
 	size_t nbFirTrees = 200;
@@ -108,6 +109,7 @@ int main(int argc, char *argv[])
 	float maxRadius = 42, minRadius = 10, nbSlice = 10;
 
 	std::vector<glm::vec3> treesCoordinates;
+	std::vector<std::pair<float, bool>> treesWindData;
 
 	for (float radius = minRadius; radius <= maxRadius; radius += (maxRadius - minRadius) / nbSlice) {
 		if (nbDrawnTrees > nbFirTrees) {
@@ -128,7 +130,10 @@ int main(int argc, char *argv[])
 			float x = (radius * randOffsetX) * cos(theta);
 			float z = (radius * randOffsetZ) * sin(theta);
 
+			float windAngle = (float(rand()) / (float)RAND_MAX) * (FirTree::WIND_MAX_ANGLE - FirTree::WIND_MIN_ANGLE) + FirTree::WIND_MIN_ANGLE;
+
 			treesCoordinates.push_back(glm::vec3(x, 0, z));
+			treesWindData.push_back(std::make_pair(windAngle, false));
 
 			nbDrawnTrees++;
 		}
@@ -197,13 +202,36 @@ int main(int argc, char *argv[])
 		//Clear the screen : the depth buffer and the color buffer
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+		// Update lights
+		std::tuple<glm::vec3, float, float, glm::vec3> lightInfo = campFire.getLightInfo();
+		firTree.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
+		environement.initLight(std::get<0>(lightInfo), std::get<3>(lightInfo), std::get<2>(lightInfo), std::get<1>(lightInfo));
+
 		// Draw environnement
-		environement.initLight(glm::vec3(0), glm::vec3(1), 0.5f, 0.5f);
 		environement.draw(camera, glm::vec3(-40.f, -10.f, -40.f), 120.f);
 
 		// Draw forest
-		for (glm::vec3 const &coord : treesCoordinates) {
-			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f);
+		for (int i = 0; i < treesCoordinates.size(); i++) {
+			glm::vec3 coord = treesCoordinates.at(i);
+			std::pair<float, bool> &windData = treesWindData.at(i);
+
+			firTree.draw(camera, glm::vec3(coord.x, coord.y, coord.z), 5.f, windData.first);
+
+			if (windData.first < FirTree::WIND_MIN_ANGLE) {
+				windData.second = !windData.second;
+				windData.first = FirTree::WIND_MIN_ANGLE;
+			}
+			else if (windData.first > FirTree::WIND_MAX_ANGLE) {
+				windData.second = !windData.second;
+				windData.first = FirTree::WIND_MAX_ANGLE;
+			}
+
+			if (windData.second) {
+				windData.first += FirTree::WIND_SPEED * (M_PI / 180.f);
+			}
+			else {
+				windData.first -= FirTree::WIND_SPEED_RETURN * (M_PI / 180.f);
+			}
 		}
 
 		//Draw fire

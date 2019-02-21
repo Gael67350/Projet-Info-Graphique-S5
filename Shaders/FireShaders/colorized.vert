@@ -5,14 +5,14 @@ attribute vec3 vPosition;
 uniform mat4 uMvp;
 
 //normals
-attribute vec3 vNormals;
+
 
 //uvValues
 attribute vec2 vUV;
 
 //Color information for fragment shader
 uniform vec4 uColor;
-varying vec4 varyColor; 
+varying vec4 varyColor;
 
 void main()
 {

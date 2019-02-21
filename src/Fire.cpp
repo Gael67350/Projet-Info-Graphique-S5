@@ -338,10 +338,17 @@ void Fire::updateFlame()
         }
 
         //updating light intensity
-        float newLightIntensity = ((float)rand()/(float)RAND_MAX)/2-0.25 + lightIntensity;
-        if(newLightIntensity >= 0.5 && newLightIntensity <= 1.0)
-            lightIntensity = newLightIntensity;
-
+        if(fireUpdateCount == 170)
+        {
+            fireUpdateCount = 0;
+            float newLightIntensity = ((float) rand() / (float) RAND_MAX) / 2 - 0.25 + lightIntensity;
+            if (newLightIntensity >= 0.4 && newLightIntensity <= 1.0)
+                lightIntensity = newLightIntensity;
+        }
+        else
+        {
+            fireUpdateCount ++;
+        }
     }
 }
 
@@ -359,10 +366,12 @@ Fire::Fire(glm::mat4 placementMatrix):
     initParticleSystem();
 
     //initialisation of light
-    lightPosition = globalPlacementMatrix*glm::vec4(0.0,1.0,0.0,0.0);
+    lightPosition = glm::vec3(glm::translate(globalPlacementMatrix, glm::vec3(0, 1.f, 0))[3]);
     lightIntensity = 1.0;
+    ambientIntensity = 0.3;
+    fireUpdateCount = 0;
 
-    lightColor = glm::vec3(1.0f,0.847f,0.f);
+    lightColor = glm::vec3(1.f, 0.631f, 0.239f);
 
     //initialising random seed to randomize light variations
     srand(time(NULL));
@@ -383,6 +392,35 @@ void Fire::draw(Camera const& currentCamera)
     GLint vPosition = glGetAttribLocation(textureShader->getProgramID(),"vPosition");
     GLint vNormals = glGetAttribLocation(textureShader->getProgramID(), "vNormals");
     GLint vUV = glGetAttribLocation(textureShader->getProgramID(), "vUV");
+
+    //light fire datas
+    GLint uAmbientIntensity = glGetUniformLocation(textureShader->getProgramID(),"uAmbientIntensity");
+    GLint uLightColor = glGetUniformLocation(textureShader->getProgramID(),"uLightColor");
+    GLint uLightIntesity = glGetUniformLocation(textureShader->getProgramID(),"uLightIntensity");
+
+    //data related with diffuse light
+
+    GLint uWorldProj = glGetUniformLocation(textureShader->getProgramID(), "uWorldProj");
+    GLint uWorldProjInv = glGetUniformLocation(textureShader->getProgramID(), "uWorldProjInv");
+
+    GLint uLightPosition = glGetUniformLocation(textureShader->getProgramID(),"uLightPosition");
+
+    //definition of the parameters related to specular reflection
+
+    GLint uCameraPosition = glGetUniformLocation(textureShader->getProgramID(),"uCameraPosition");
+    GLint specularConstant = glGetUniformLocation(textureShader->getProgramID(),"specularConstant");
+    GLint shine = glGetUniformLocation(textureShader->getProgramID(),"shine");
+
+    //affecting shader variables with the data from light defined in class
+    glUniform1f(uAmbientIntensity,ambientIntensity);
+    glUniform3fv(uLightColor,1,glm::value_ptr(lightColor));
+    glUniform1f(uLightIntesity,lightIntensity);
+
+    glUniform3fv(uLightPosition,1,glm::value_ptr(lightPosition));
+
+    glm::vec3 camPos = currentCamera.getPosition();
+
+    glUniform3fv(uCameraPosition,1,glm::value_ptr(camPos));
 
     //selection of datas in the VBOS
     //vertexes
@@ -410,6 +448,10 @@ void Fire::draw(Camera const& currentCamera)
 
     //logs display
 
+    //affecting specular variables specific to the log material
+    glUniform1f(specularConstant,0.3f);
+    glUniform1f(shine,1.0f);
+
     //texture affectation
 
     glActiveTexture(GL_TEXTURE0);
@@ -425,18 +467,26 @@ void Fire::draw(Camera const& currentCamera)
 
     for(int i = 0 ;i<9 ; i++ )
     {
-        glm::mat4 finalCylinderTranform = preRotation*shapeTransformationMatrix;
-        glm::mat4 uMvpMat = currentCamera.lookAt()*globalPlacementMatrix*finalCylinderTranform;
+        glm::mat4 finalCylinderTranform = globalPlacementMatrix*preRotation*shapeTransformationMatrix;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*finalCylinderTranform;
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
+
+        //passing the light render related matrix to the shader
+
+        glUniformMatrix4fv(uWorldProj , 1 , false , glm::value_ptr(currentCamera.getViewMatrix()*finalCylinderTranform));
+        glUniformMatrix4fv(uWorldProjInv , 1 , true , glm::value_ptr(glm::inverse(currentCamera.getViewMatrix()*finalCylinderTranform)));
+
         //figure draw
 
         glDrawArrays(GL_TRIANGLES, 0, log.getNbVertices());
 
+
         //rotation to draw the next log
 
         preRotation = glm::rotate(preRotation,(2.f*3.14f/8.f),glm::vec3(0.f,1.f,0.f));
+
     }
 
     //end of the log drawing section
@@ -446,6 +496,10 @@ void Fire::draw(Camera const& currentCamera)
     shapeTransformationMatrix = glm::mat4(1.f);
 
     //begin of the rocks drawing section
+
+    //affecting specular variables specific to the rock material
+    glUniform1f(specularConstant,1.0f);
+    glUniform1f(shine,1.0f);
 
     //texture affectation for the rock
     glActiveTexture(GL_TEXTURE0);
@@ -462,11 +516,16 @@ void Fire::draw(Camera const& currentCamera)
     for(int i = 0 ;i<=19 ; i++ )
     {
 
-        glm::mat4 finalRockTranform = preRotation*shapeTransformationMatrix;
-        glm::mat4 uMvpMat = currentCamera.lookAt()*globalPlacementMatrix*finalRockTranform;
+        glm::mat4 finalRockTranform = globalPlacementMatrix*preRotation*shapeTransformationMatrix;
+        glm::mat4 uMvpMat = currentCamera.lookAt()*finalRockTranform;
 
         //reafectation of the projection matrix
         glUniformMatrix4fv(uMVP, 1, false, glm::value_ptr(uMvpMat));
+
+        //passing the light render related matrix to the shader
+
+        glUniformMatrix4fv(uWorldProj , 1 , false , glm::value_ptr(currentCamera.getViewMatrix()*finalRockTranform));
+        glUniformMatrix4fv(uWorldProjInv , 1 , true , glm::value_ptr(glm::inverse(currentCamera.getViewMatrix()*finalRockTranform)));
 
         //figure draw
 
