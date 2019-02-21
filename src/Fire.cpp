@@ -317,15 +317,15 @@ void Fire::updateFlame()
         //updating color
         //blue color at the flame's basis
         if(verticalParticleOffset.at(i) < beginPoint+0.1)
-            particlesColor.at(i) = glm::vec4(0.f,0.f,1.f,0.65f);
+            particlesColor.at(i) = glm::vec4(0.f,0.f,1.f,0.55f);
         //clear yellow to orange
         else if(verticalParticleOffset.at(i) < endPoint/1.3)
-            particlesColor.at(i) = glm::vec4(1.f,1.f-(verticalParticleOffset.at(i)/(endPoint/1.3)),0.f,0.65f);
+            particlesColor.at(i) = glm::vec4(1.f,1.f-(verticalParticleOffset.at(i)/(endPoint/1.3)),0.f,0.55f);
         //fading to black then grey for smoke
         else
             particlesColor.at(i) = (1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-1.18f)) ?
-                                   glm::vec4((1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-1.18f)),0.0f,0.0f,0.65f)
-                                   : glm::vec4(0.1f,0.1f,0.1f,0.65f);
+                                   glm::vec4((1.f+(1.f/3.f)-verticalParticleOffset.at(i)/(endPoint-1.18f)),0.0f,0.0f,0.55f)
+                                   : glm::vec4(0.1f,0.1f,0.1f,0.55f);
 
         //updatingFlameSize
         if (verticalParticleOffset.at(i) < endPoint-0.8)
@@ -612,4 +612,17 @@ void Fire::draw(Camera const& currentCamera)
     //end of the fire drawing section
 
     updateFlame();
+}
+
+Fire::~Fire()
+{
+
+    //definition of the different buffers
+    glDeleteBuffers(1,&fireBuffer);
+
+    //shaderFiles
+    delete(colorShader);
+    delete(textureShader);
+
+
 }

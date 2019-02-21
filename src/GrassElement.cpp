@@ -96,7 +96,7 @@ void GrassElement::draw(Camera const& currentCamera,glm::vec3 const& displacemen
     uMvpMat = glm::rotate(uMvpMat,-3.14f/2.f,glm::vec3(1.0f,0.0f,0.0f));
 
     //invert scale of the matrix to compensate the model's shink
-    globalPlacementMatrix = glm::translate(globalPlacementMatrix,glm::vec3(-displacementVector.x*3.33,-12.5*0.8,displacementVector.z*3.33));
+    globalPlacementMatrix = glm::translate(globalPlacementMatrix,glm::vec3(-displacementVector.x*3.33f,-10.5f*0.8f,displacementVector.z*3.33f));
 
     glm::mat4 finalTransform = globalPlacementMatrix * uMvpMat;
     uMvpMat = currentCamera.lookAt() * finalTransform;
@@ -127,4 +127,11 @@ color{glm::vec4(0.176f, 0.584f, 0.f,1.0f)}
 {
     initBuffer();
     initShaders();
+}
+
+GrassElement::~GrassElement()
+{
+    glDeleteBuffers(1,&grassBuffer);
+
+    delete(colorShader);
 }
