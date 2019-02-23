@@ -1,0 +1,5 @@
+# This is the list of people who have contributed code to this repository.
+
+Florence Houessou <florence.houessou@u-psud.fr>
+Guillaume Gosset <guillaume.gosset@u-psud.fr>
+Gael Scion <gael.scion@u-psud.fr>
