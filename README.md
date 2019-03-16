@@ -1,7 +1,7 @@
 # Projet-Info-Graphique-S5
 Projet d'informatique graphique S5 - Scène 3D animée avec OpenGL
 
-![Demo](../assets/campfire_cg_project_img_faded.png?raw=true)
+![Demo](../assets/assets/campfire_cg_project_img_faded.png?raw=true)
 
 Le projet est fait pour se construire intégralement a l'aide de CMake, tous les fichiers de shader et les ressources sont copiés automatiquement dans le dossier bin.
 
