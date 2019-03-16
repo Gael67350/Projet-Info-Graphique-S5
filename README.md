@@ -1,6 +1,8 @@
 # Projet-Info-Graphique-S5
 Projet d'informatique graphique S5 - Scène 3D animée avec OpenGL
 
+![Demo](../assets/campfire_cg_project_img_faded.png?raw=true)
+
 Le projet est fait pour se construire intégralement a l'aide de CMake, tous les fichiers de shader et les ressources sont copiés automatiquement dans le dossier bin.
 
 Par ailleurs, toutes les librairies utilisées sont celles incluses à l'origine dans le squelette.
@@ -40,4 +42,5 @@ Sous Windows, les shaders (dans le dossier ./Shaders) peuvent ne pas compiler co
 
 Ce projet est sous licence GNU General Public License v3.0. Pour plus d'informations, consultez le fichier LICENSE.
 
-This project is licensed under GNU General Public License v3.0. For further informations take a look at the LICENCE file.
+This project is licensed under GNU General Public License v3.0. For further informations take a look 
+at the LICENSE file.
